@@ -22,7 +22,7 @@ class CasperUploadDropzone extends PolymerElement {
        * @type {String}
        */
       addButtonText: {
-type: String,
+        type: String,
         value: 'Carregar ficheiros'
       },
       /**
@@ -39,7 +39,7 @@ type: String,
        *
        * @type {Number}
        */
-    maxFiles: {
+      maxFiles: {
         type: Number,
         value: 1
       },
@@ -49,7 +49,7 @@ type: String,
        * @type {Boolean}
        */
       noDrop: {
-  type: Boolean
+        type: Boolean
       },
       /**
        * The URL where the files will be uploaded.
@@ -60,7 +60,7 @@ type: String,
         type: String
       },
       __maxFilesReached: {
-type: Boolean,
+        type: Boolean,
         observer: '__maxFilesReachedChanged'
       }
     };
@@ -93,11 +93,11 @@ type: Boolean,
    * @param {Boolean} disabled The current disabled property value.
    */
   __disabledChanged (disabled) {
-this.noDrop = disabled;
+    this.noDrop = disabled;
   }
 
   __maxFilesReachedChanged (maxFilesReached) {
-  this.disabled = maxFilesReached;
+    this.disabled = maxFilesReached;
   }
 
   /**
