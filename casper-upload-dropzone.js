@@ -26,6 +26,23 @@ class CasperUploadDropzone extends PolymerElement {
         value: 'Carregar ficheiros'
       },
       /**
+       * Additional parameters that will be included on the XMLHttpRequest.
+       *
+       * @type {Object}
+       */
+      additionalParams: {
+        type: Object
+      },
+      /**
+       * The XHR property in which we'll save the aforementioned additional parameters.
+       *
+       * @type {String}
+       */
+      additionalParamsKey: {
+        type: String,
+        value: 'additionalParams'
+      },
+      /**
        * Flag that enables / disables the upload component.
        *
        * @type {Boolean}
@@ -113,6 +130,8 @@ class CasperUploadDropzone extends PolymerElement {
           [[addButtonText]]
         </casper-button>
         <paper-ripple id="ripple"></paper-ripple>
+
+        [[__displaySupportedExtensions(accept)]]
       </vaadin-upload>
     `;
   }
@@ -125,6 +144,8 @@ class CasperUploadDropzone extends PolymerElement {
     this.$.upload.addEventListener('dragleave', () => this.__onDragLeave());
     this.$.upload.addEventListener('dragenter', () => this.__onDragEnter());
     this.$.upload.addEventListener('upload-before', () => this.__onUploadBefore());
+    this.$.upload.addEventListener('upload-request', event => this.__onUploadRequest(event));
+    this.$.upload.addEventListener('upload-success', event => this.__onUploadSuccess(event));
   }
 
   /**
@@ -139,6 +160,38 @@ class CasperUploadDropzone extends PolymerElement {
    */
   __onUploadBefore () {
     this.$.ripple.upAction();
+  }
+
+  /**
+   * This method is called when the request is successful and the file was uploaded.
+   *
+   * @param {Object} event The event's object.
+   */
+  __onUploadSuccess (event) {
+    this.dispatchEvent(new CustomEvent('on-upload-success', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        ...JSON.parse(event.detail.xhr.response),
+        [this.additionalParamsKey]: event.detail.xhr[this.additionalParamsKey]
+      }
+    }));
+  }
+
+  /**
+   * This method is called when the upload component sends the file and we'll add two required headers.
+   *
+   * @param {Object} event The event's object.
+   */
+  __onUploadRequest (event) {
+    event.preventDefault();
+
+    // If the developer specified additional params, include them in the XMLHttpRequest.
+    if (this.additionalParams) event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
+
+    event.detail.xhr.setRequestHeader('Content-Disposition', 'form-data');
+    event.detail.xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+    event.detail.xhr.send(event.detail.file);
   }
 
   /**
@@ -197,6 +250,24 @@ class CasperUploadDropzone extends PolymerElement {
         }
       }
     };
+  }
+
+  /**
+   * Displays a helper text which lists the allowed file extensions.
+   */
+  __displaySupportedExtensions () {
+    const mimeTypesExtensions = {
+      'application/pdf': '.pdf',
+      'application/xml': '.xml',
+      'image/jpeg': '.jpg / .jpeg',
+      'image/png': '.png',
+      'text/html': '.html',
+      'text/xml': '.xml',
+    };
+
+    const acceptedExtensions = this.accept.split(',').map(mimeType => mimeTypesExtensions[mimeType.trim()]);
+
+    return `Os ficheiros suportados são os seguintes: ${[...new Set(acceptedExtensions)].join(' / ')}`;
   }
 }
 
