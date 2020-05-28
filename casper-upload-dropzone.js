@@ -1,9 +1,9 @@
+import '@polymer/paper-ripple/paper-ripple.js';
 import '@vaadin/vaadin-upload/vaadin-upload.js';
 import '@cloudware-casper/casper-button/casper-button.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 class CasperUploadDropzone extends PolymerElement {
-
 
   static get properties () {
     return {
@@ -32,6 +32,7 @@ class CasperUploadDropzone extends PolymerElement {
        */
       disabled: {
         type: Boolean,
+        reflectToAttribute: true,
         observer: '__disabledChanged'
       },
       /**
@@ -40,15 +41,14 @@ class CasperUploadDropzone extends PolymerElement {
        * @type {Number}
        */
       maxFiles: {
-        type: Number,
-        value: 1
+        type: Number
       },
       /**
        * Flag that enables / disables the component's drop behavior.
        *
        * @type {Boolean}
        */
-      noDrop: {
+      nodrop: {
         type: Boolean
       },
       /**
@@ -59,6 +59,19 @@ class CasperUploadDropzone extends PolymerElement {
       target: {
         type: String
       },
+      /**
+       * Maximum time in milliseconds to upload the file.
+       *
+       * @type {Number}
+       */
+      timeout: {
+        type: Number
+      },
+      /**
+       * The flag that states if the maximum number of files was reached or not.
+       *
+       * @type {Boolean}
+       */
       __maxFilesReached: {
         type: Boolean,
         observer: '__maxFilesReachedChanged'
@@ -67,37 +80,93 @@ class CasperUploadDropzone extends PolymerElement {
   }
   static get template () {
     return html`
+      <style>
+        casper-button {
+          margin: 0;
+        }
+
+        #upload {
+          padding: 8px;
+        }
+
+        :host(:not([disabled])) #upload {
+          border: 1px solid #CCCCCC;
+        }
+
+        :host(:not([disabled])) #upload[dragover] {
+          border: 1px solid var(--primary-color);
+        }
+
+        :host([disabled]) #upload {
+          border: 1px dashed #CCCCCC;
+        }
+      </style>
       <vaadin-upload
         id="upload"
         accept="[[accept]]"
         target="[[target]]"
-        nodrop="[[noDrop]]"
+        nodrop="[[nodrop]]"
+        timeout="[[timeout]]"
         max-files="[[maxFiles]]"
         max-files-reached="{{__maxFilesReached}}">
         <casper-button slot="add-button" disabled="[[disabled]]">
           [[addButtonText]]
         </casper-button>
+        <paper-ripple id="ripple"></paper-ripple>
       </vaadin-upload>
     `;
   }
 
   ready () {
     super.ready();
-
+    window.upload = this;
     this.__setupUploadTranslations();
+
+    this.$.upload.addEventListener('dragleave', () => this.__onDragLeave());
+    this.$.upload.addEventListener('dragenter', () => this.__onDragEnter());
+    this.$.upload.addEventListener('upload-before', () => this.__onUploadBefore());
+  }
+
+  /**
+   * This method clears all the files from the dropzone.
+   */
+  clearFiles () {
+    this.$.upload.files = [];
+  }
+
+  /**
+   * This method is called just before the upload begins.
+   */
+  __onUploadBefore () {
+    this.$.ripple.upAction();
+  }
+
+  /**
+   * This method is called when the user enters the dropzone with a file.
+   */
+  __onDragEnter () {
+    this.$.ripple.downAction();
+  }
+
+  /**
+   * This method is called when the user leaves the dropzone with a file.
+   */
+  __onDragLeave () {
+    this.$.ripple.upAction();
   }
 
   /**
    * This method is called when the disabled property changes.
-   *
-   * @param {Boolean} disabled The current disabled property value.
    */
   __disabledChanged (disabled) {
-    this.noDrop = disabled;
+    this.nodrop = this.disabled;
   }
 
-  __maxFilesReachedChanged (maxFilesReached) {
-    this.disabled = maxFilesReached;
+  /**
+   * This method is called when the maximum number of files is reached or not.
+   */
+  __maxFilesReachedChanged () {
+    this.disabled = this.__maxFilesReached;
   }
 
   /**
