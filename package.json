@@ -2,6 +2,7 @@
   "name": "@cloudware-casper/casper-upload-dropzone",
   "version": "0.0.0",
   "dependencies": {
+    "@polymer/paper-ripple": "^3.x",
     "@polymer/polymer": "^3.0.0",
     "@vaadin/vaadin-upload": "^4.x"
   }
