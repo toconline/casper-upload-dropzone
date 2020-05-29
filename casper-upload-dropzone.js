@@ -75,6 +75,15 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
         value: Infinity
       },
       /**
+       * The component's sub title.
+       *
+       * @type {String}
+       */
+      subTitle: {
+        type: String,
+        value: 'Subtítulo'
+      },
+      /**
        * The URL where the files will be uploaded.
        *
        * @type {String}
@@ -89,6 +98,15 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
        */
       timeout: {
         type: Number
+      },
+      /**
+       * The component's title.
+       *
+       * @type {String}
+       */
+      title: {
+        type: String,
+        value: 'Título'
       },
       /**
        * The flag that states if the maximum number of files was reached or not.
@@ -113,6 +131,10 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
           border: 1px dashed var(--primary-color);
         }
 
+        :host([disabled]) {
+          border: 1px dashed var(--disabled-background-color);
+        }
+
         :host([dragover]) {
           border: 1px solid var(--primary-color);
           background-color: var(--light-primary-color);
@@ -122,15 +144,7 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
           pointer-events: none;
         }
 
-        #container {
-          display: flex;
-          position: relative;
-          align-items: center;
-          flex-direction: column;
-          justify-content: center;
-        }
-
-        #container #ripple {
+        #ripple {
           top: 0;
           left: 0;
           width: 100%;
@@ -138,30 +152,56 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
           position: absolute;
         }
 
-        #container #header-icon {
-          width: 100px;
-          height: 100px;
+        .container {
+          display: flex;
+          position: relative;
+          align-items: center;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .container .header-icon {
+          width: 75px;
+          height: 75px;
           color: var(--primary-color);
         }
 
-        #container #upload {
+        :host([disabled]) .container .header-icon {
+          color: var(--disabled-text-color);
+        }
+
+        .container .title-container {
+          font-size: 20px;
+          font-weight: bold;
+          margin-bottom: 15px;
+          color: var(--primary-color);
+        }
+
+        .container .sub-title-container {
+          color: darkgray;
+          margin-bottom: 15px;
+        }
+
+        .container #upload {
           display: flex;
           width: 100%;
+          padding: 0;
           align-items: center;
           flex-direction: column;
         }
 
-        #container #upload casper-button {
+        .container #upload casper-button {
           margin: 0;
         }
 
-        #container .help {
+        .container .upload-info {
           color: #929292;
           display: flex;
+          margin-top: 15px;
           align-items: center;
         }
 
-        #container .help casper-icon {
+        .container .upload-info casper-icon {
           width: 25px;
           height: 25px;
           margin-right: 5px;
@@ -170,8 +210,16 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
 
       <paper-ripple id="ripple"></paper-ripple>
 
-      <div id="container">
-        <casper-icon id="header-icon" icon="fa-light:cloud-upload"></casper-icon>
+      <div class="container">
+        <casper-icon class="header-icon" icon="fa-light:cloud-upload"></casper-icon>
+
+        <template is="dom-if" if="[[title]]">
+          <div class="title-container">[[title]]</div>
+        </template>
+
+        <template is="dom-if" if="[[subTitle]]">
+          <div class="sub-title-container">[[subTitle]]</div>
+        </template>
 
         <vaadin-upload
           id="upload"
@@ -187,7 +235,7 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
           </casper-button>
         </vaadin-upload>
 
-        <div class="help">
+        <div class="upload-info">
           <casper-icon icon="fa-light:info-circle"></casper-icon>
           [[__displaySupportedExtensions(accept, maxFiles)]]
         </div>

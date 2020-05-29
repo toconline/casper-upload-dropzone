@@ -5,6 +5,8 @@ export const PointerEventsMixin = superClass => {
      * This method is called when the user enters the dropzone with a file.
      */
     __onDragEnter () {
+      if (this.disabled) return;
+
       this.__applyDropzoneStyling();
     }
 
@@ -25,7 +27,7 @@ export const PointerEventsMixin = superClass => {
       event.preventDefault();
       this.__removeDropzoneStyling();
 
-      if (event.dataTransfer.files.length === 0) return;
+      if (event.dataTransfer.files.length === 0 || this.disabled) return;
 
       this.$.upload.files = [
         ...this.$.upload.files,
