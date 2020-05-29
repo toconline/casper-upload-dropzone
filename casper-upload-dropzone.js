@@ -1,9 +1,13 @@
+import { VaadinUploadMixin } from './mixins/vaadin-upload-mixin.js';
+import { PointerEventsMixin } from './mixins/pointer-events-mixin.js';
+
 import '@polymer/paper-ripple/paper-ripple.js';
 import '@vaadin/vaadin-upload/vaadin-upload.js';
+import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-button/casper-button.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
-class CasperUploadDropzone extends PolymerElement {
+class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerElement)) {
 
   static get properties () {
     return {
@@ -43,6 +47,15 @@ class CasperUploadDropzone extends PolymerElement {
         value: 'additionalParams'
       },
       /**
+       * The app's global object.
+       *
+       * @type {Object}
+       */
+      app: {
+        type: Object,
+        value: () => { return window.app; }
+      },
+      /**
        * Flag that enables / disables the upload component.
        *
        * @type {Boolean}
@@ -58,15 +71,8 @@ class CasperUploadDropzone extends PolymerElement {
        * @type {Number}
        */
       maxFiles: {
-        type: Number
-      },
-      /**
-       * Flag that enables / disables the component's drop behavior.
-       *
-       * @type {Boolean}
-       */
-      nodrop: {
-        type: Boolean
+        type: Number,
+        value: Infinity
       },
       /**
        * The URL where the files will be uploaded.
@@ -98,53 +104,109 @@ class CasperUploadDropzone extends PolymerElement {
   static get template () {
     return html`
       <style>
-        casper-button {
+        :host {
+          height: 100%;
+          padding: 25px;
+          display: block;
+          overflow: auto;
+          position: relative;
+          border: 1px dashed var(--primary-color);
+        }
+
+        :host([dragover]) {
+          border: 1px solid var(--primary-color);
+          background-color: var(--light-primary-color);
+        }
+
+        :host([dragover]) * {
+          pointer-events: none;
+        }
+
+        #container {
+          display: flex;
+          position: relative;
+          align-items: center;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        #container #ripple {
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          position: absolute;
+        }
+
+        #container #header-icon {
+          width: 100px;
+          height: 100px;
+          color: var(--primary-color);
+        }
+
+        #container #upload {
+          display: flex;
+          width: 100%;
+          align-items: center;
+          flex-direction: column;
+        }
+
+        #container #upload casper-button {
           margin: 0;
         }
 
-        #upload {
-          padding: 8px;
+        #container .help {
+          color: #929292;
+          display: flex;
+          align-items: center;
         }
 
-        :host(:not([disabled])) #upload {
-          border: 1px solid #CCCCCC;
-        }
-
-        :host(:not([disabled])) #upload[dragover] {
-          border: 1px solid var(--primary-color);
-        }
-
-        :host([disabled]) #upload {
-          border: 1px dashed #CCCCCC;
+        #container .help casper-icon {
+          width: 25px;
+          height: 25px;
+          margin-right: 5px;
         }
       </style>
-      <vaadin-upload
-        id="upload"
-        accept="[[accept]]"
-        target="[[target]]"
-        nodrop="[[nodrop]]"
-        timeout="[[timeout]]"
-        max-files="[[maxFiles]]"
-        max-files-reached="{{__maxFilesReached}}">
-        <casper-button slot="add-button" disabled="[[disabled]]">
-          [[addButtonText]]
-        </casper-button>
-        <paper-ripple id="ripple"></paper-ripple>
 
-        [[__displaySupportedExtensions(accept)]]
-      </vaadin-upload>
+      <paper-ripple id="ripple"></paper-ripple>
+
+      <div id="container">
+        <casper-icon id="header-icon" icon="fa-light:cloud-upload"></casper-icon>
+
+        <vaadin-upload
+          id="upload"
+          class="casper-upload-dropzone"
+          nodrop
+          accept="[[accept]]"
+          target="[[target]]"
+          timeout="[[timeout]]"
+          max-files="[[maxFiles]]"
+          max-files-reached="{{__maxFilesReached}}">
+          <casper-button slot="add-button" disabled="[[disabled]]">
+            [[addButtonText]]
+          </casper-button>
+        </vaadin-upload>
+
+        <div class="help">
+          <casper-icon icon="fa-light:info-circle"></casper-icon>
+          [[__displaySupportedExtensions(accept, maxFiles)]]
+        </div>
+      </div>
     `;
   }
 
   ready () {
     super.ready();
-    window.upload = this;
+
     this.__setupUploadTranslations();
 
-    this.$.upload.addEventListener('dragleave', () => this.__onDragLeave());
-    this.$.upload.addEventListener('dragenter', () => this.__onDragEnter());
-    this.$.upload.addEventListener('upload-before', () => this.__onUploadBefore());
-    this.$.upload.addEventListener('upload-request', event => this.__onUploadRequest(event));
+    this.shadowRoot.host.addEventListener('drop', event => this.__onDrop(event));
+    this.shadowRoot.host.addEventListener('dragenter', () => this.__onDragEnter());
+    this.shadowRoot.host.addEventListener('dragover', event => this.__onDragOver(event));
+    this.shadowRoot.host.addEventListener('dragleave', event => this.__onDragLeave(event));
+
+    this.$.upload.addEventListener('file-reject', event => this.__onFileReject(event));
+    this.$.upload.addEventListener('upload-success', event => this.__onUploadSuccess(event));
     this.$.upload.addEventListener('upload-success', event => this.__onUploadSuccess(event));
   }
 
@@ -156,70 +218,30 @@ class CasperUploadDropzone extends PolymerElement {
   }
 
   /**
-   * This method is called just before the upload begins.
-   */
-  __onUploadBefore () {
-    this.$.ripple.upAction();
-  }
-
-  /**
-   * This method is called when the request is successful and the file was uploaded.
-   *
-   * @param {Object} event The event's object.
-   */
-  __onUploadSuccess (event) {
-    this.dispatchEvent(new CustomEvent('on-upload-success', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        ...JSON.parse(event.detail.xhr.response),
-        [this.additionalParamsKey]: event.detail.xhr[this.additionalParamsKey]
-      }
-    }));
-  }
-
-  /**
-   * This method is called when the upload component sends the file and we'll add two required headers.
-   *
-   * @param {Object} event The event's object.
-   */
-  __onUploadRequest (event) {
-    event.preventDefault();
-
-    // If the developer specified additional params, include them in the XMLHttpRequest.
-    if (this.additionalParams) event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
-
-    event.detail.xhr.setRequestHeader('Content-Disposition', 'form-data');
-    event.detail.xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-    event.detail.xhr.send(event.detail.file);
-  }
-
-  /**
-   * This method is called when the user enters the dropzone with a file.
-   */
-  __onDragEnter () {
-    this.$.ripple.downAction();
-  }
-
-  /**
-   * This method is called when the user leaves the dropzone with a file.
-   */
-  __onDragLeave () {
-    this.$.ripple.upAction();
-  }
-
-  /**
-   * This method is called when the disabled property changes.
-   */
-  __disabledChanged (disabled) {
-    this.nodrop = this.disabled;
-  }
-
-  /**
    * This method is called when the maximum number of files is reached or not.
    */
   __maxFilesReachedChanged () {
     this.disabled = this.__maxFilesReached;
+  }
+
+  /**
+   * Displays a helper text which lists the allowed file extensions.
+   */
+  __displaySupportedExtensions () {
+    const mimeTypesExtensions = {
+      'application/pdf': '.pdf',
+      'application/xml': '.xml',
+      'image/jpeg': '.jpg / .jpeg',
+      'image/png': '.png',
+      'text/html': '.html',
+      'text/xml': '.xml',
+    };
+
+    const acceptedExtensions = [...new Set(this.accept.split(',').map(mimeType => mimeTypesExtensions[mimeType.trim()]))].join(' / ');
+
+    return this.maxFiles === Infinity
+      ? `Pode fazer upload de ficheiros com as seguintes extensões: ${acceptedExtensions}`
+      : `Pode fazer upload de ${this.maxFiles} ficheiro(s) com as seguintes extensões: ${acceptedExtensions}`;
   }
 
   /**
@@ -250,24 +272,6 @@ class CasperUploadDropzone extends PolymerElement {
         }
       }
     };
-  }
-
-  /**
-   * Displays a helper text which lists the allowed file extensions.
-   */
-  __displaySupportedExtensions () {
-    const mimeTypesExtensions = {
-      'application/pdf': '.pdf',
-      'application/xml': '.xml',
-      'image/jpeg': '.jpg / .jpeg',
-      'image/png': '.png',
-      'text/html': '.html',
-      'text/xml': '.xml',
-    };
-
-    const acceptedExtensions = this.accept.split(',').map(mimeType => mimeTypesExtensions[mimeType.trim()]);
-
-    return `Os ficheiros suportados são os seguintes: ${[...new Set(acceptedExtensions)].join(' / ')}`;
   }
 }
 
