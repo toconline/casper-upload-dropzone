@@ -66,6 +66,15 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
         observer: '__disabledChanged'
       },
       /**
+       * The component's header icon.
+       *
+       * @type {String}
+       */
+      headerIcon: {
+        type: String,
+        value: 'fa-light:cloud-upload'
+      },
+      /**
        * Specifies the maximum number of files.
        *
        * @type {Number}
@@ -211,7 +220,7 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
       <paper-ripple id="ripple"></paper-ripple>
 
       <div class="container">
-        <casper-icon class="header-icon" icon="fa-light:cloud-upload"></casper-icon>
+        <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
 
         <template is="dom-if" if="[[title]]">
           <div class="title-container">[[title]]</div>
