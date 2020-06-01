@@ -234,6 +234,7 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
           id="upload"
           class="casper-upload-dropzone"
           nodrop
+          files="{{__files}}"
           accept="[[accept]]"
           target="[[target]]"
           timeout="[[timeout]]"
