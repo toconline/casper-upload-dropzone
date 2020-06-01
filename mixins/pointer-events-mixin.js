@@ -29,10 +29,13 @@ export const PointerEventsMixin = superClass => {
 
       if (event.dataTransfer.files.length === 0 || this.disabled) return;
 
-      this.$.upload.files = [
-        ...this.$.upload.files,
-        ...event.dataTransfer.files
-      ]
+      // Check the type of files that were uploaded.
+      if (Array.from(event.dataTransfer.files).some(file => !this.__acceptedExtensions.includes(file.type))) {
+        return this.__onFileReject();
+      }
+
+      this.$.upload.files = [ ...this.$.upload.files, ...event.dataTransfer.files ];
+      this.$.upload.uploadFiles(this.$.upload.files);
     }
 
     /**

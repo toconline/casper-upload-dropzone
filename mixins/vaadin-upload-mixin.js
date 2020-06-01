@@ -3,13 +3,11 @@ export const VaadinUploadMixin = superClass => {
 
     /**
      * This method is called when the user tries to upload an invalid file.
-     *
-     * @param {Object} event The event's object.
      */
-    __onFileReject (event) {
+    __onFileReject () {
       this.app.openToast({
+        text: this.__supportedExtensions(),
         backgroundColor: 'var(--error-color)',
-        text: `Não foi possível fazer upload do ficheiro ${event.detail.file.name}.`
       });
     }
 
@@ -19,14 +17,18 @@ export const VaadinUploadMixin = superClass => {
      * @param {Object} event The event's object.
      */
     __onUploadSuccess (event) {
-      this.dispatchEvent(new CustomEvent('on-upload-success', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          ...JSON.parse(event.detail.xhr.response),
-          [this.additionalParamsKey]: event.detail.xhr[this.additionalParamsKey]
-        }
-      }));
+      if (event.detail.xhr.status === 200) {
+        this.dispatchEvent(new CustomEvent('on-upload-success', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            originalFileName: event.detail.file.name,
+            originalFileType: event.detail.file.type,
+            uploadedFile: JSON.parse(event.detail.xhr.response).file,
+            [this.additionalParamsKey]: event.detail.xhr[this.additionalParamsKey]
+          }
+        }));
+      }
     }
 
     /**
@@ -38,10 +40,12 @@ export const VaadinUploadMixin = superClass => {
       event.preventDefault();
 
       // If the developer specified additional params, include them in the XMLHttpRequest.
-      if (this.additionalParams) event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
+      if (this.additionalParams) {
+        event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
+      }
 
-      event.detail.xhr.setRequestHeader('Content-Disposition', 'form-data');
       event.detail.xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      event.detail.xhr.setRequestHeader('Content-Disposition', 'form-data');
       event.detail.xhr.send(event.detail.file);
     }
   }

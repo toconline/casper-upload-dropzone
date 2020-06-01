@@ -18,14 +18,15 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
        */
       accept: {
         type: String,
-        value: 'image/jpeg, image/png, application/pdf'
+        value: 'image/jpeg, image/png, application/pdf',
+        observer: '__acceptChanged'
       },
       /**
        * The add button's text.
        *
        * @type {String}
        */
-      addButtonText: {
+      addFileButtonText: {
         type: String,
         value: 'Carregar ficheiros'
       },
@@ -62,8 +63,7 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
        */
       disabled: {
         type: Boolean,
-        reflectToAttribute: true,
-        observer: '__disabledChanged'
+        reflectToAttribute: true
       },
       /**
        * The component's header icon.
@@ -240,13 +240,13 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
           max-files="[[maxFiles]]"
           max-files-reached="{{__maxFilesReached}}">
           <casper-button slot="add-button" disabled="[[disabled]]">
-            [[addButtonText]]
+            [[addFileButtonText]]
           </casper-button>
         </vaadin-upload>
 
         <div class="upload-info">
           <casper-icon icon="fa-light:info-circle"></casper-icon>
-          [[__displaySupportedExtensions(accept, maxFiles)]]
+          [[__supportedExtensions(accept, maxFiles)]]
         </div>
       </div>
     `;
@@ -263,14 +263,14 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
     this.shadowRoot.host.addEventListener('dragleave', event => this.__onDragLeave(event));
 
     this.$.upload.addEventListener('file-reject', event => this.__onFileReject(event));
-    this.$.upload.addEventListener('upload-success', event => this.__onUploadSuccess(event));
+    this.$.upload.addEventListener('upload-request', event => this.__onUploadRequest(event));
     this.$.upload.addEventListener('upload-success', event => this.__onUploadSuccess(event));
   }
 
   /**
    * This method clears all the files from the dropzone.
    */
-  clearFiles () {
+  clearUploadedFiles () {
     this.$.upload.files = [];
   }
 
@@ -282,15 +282,23 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
   }
 
   /**
+   * This method saves the accepted extensions in an array.
+   */
+  __acceptChanged () {
+    this.__acceptedExtensions = this.accept.split(',').map(extension => extension.trim());
+  }
+
+  /**
    * Displays a helper text which lists the allowed file extensions.
    */
-  __displaySupportedExtensions () {
+  __supportedExtensions () {
     const mimeTypesExtensions = {
       'application/pdf': '.pdf',
       'application/xml': '.xml',
       'image/jpeg': '.jpg / .jpeg',
       'image/png': '.png',
       'text/html': '.html',
+      'text/plain': '.txt',
       'text/xml': '.xml',
     };
 
