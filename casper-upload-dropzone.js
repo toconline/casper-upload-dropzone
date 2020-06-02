@@ -1,12 +1,11 @@
-import { VaadinUploadMixin } from './mixins/vaadin-upload-mixin.js';
-import { PointerEventsMixin } from './mixins/pointer-events-mixin.js';
+import { CasperUploadDropzoneErrors } from './casper-upload-dropzone-constants.js';
 
 import '@vaadin/vaadin-upload/vaadin-upload.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-button/casper-button.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
-class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerElement)) {
+class CasperUploadDropzone extends PolymerElement {
 
   static get properties () {
     return {
@@ -17,8 +16,7 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
        */
       accept: {
         type: String,
-        value: 'image/jpeg, image/png, application/pdf',
-        observer: '__acceptChanged'
+        value: 'image/jpeg, image/png, application/pdf'
       },
       /**
        * The add button's text.
@@ -83,13 +81,30 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
         value: Infinity
       },
       /**
+       * Specifies the maximum size of each individual file.
+       *
+       * @type {Number}
+       */
+      maxFileSize: {
+        type: Number,
+        value: Infinity
+      },
+      /**
+       * Specifies the maximum size of all the files combined.
+       *
+       * @type {Number}
+       */
+      maxFilesTotalSize: {
+        type: Number,
+        value: Infinity
+      },
+      /**
        * The component's sub title.
        *
        * @type {String}
        */
       subTitle: {
         type: String,
-        value: 'Subtítulo'
       },
       /**
        * The URL where the files will be uploaded.
@@ -114,16 +129,17 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
        */
       title: {
         type: String,
-        value: 'Título'
       },
-      /**
-       * The flag that states if the maximum number of files was reached or not.
-       *
-       * @type {Boolean}
-       */
-      __maxFilesReached: {
-        type: Boolean,
-        observer: '__maxFilesReachedChanged'
+      __rejectedFiles: {
+        type: Array,
+        value: []
+      },
+      __requestHeaders: {
+        type: Object,
+        value: () => ({
+          'Content-Disposition': 'form-data',
+          'Content-Type': 'application/octet-stream'
+        })
       }
     };
   }
@@ -131,121 +147,84 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
     return html`
       <style>
         :host {
-          height: 100%;
-          padding: 25px;
           display: block;
-          overflow: auto;
-          position: relative;
-          border: 1px dashed var(--primary-color);
         }
 
-        :host([disabled]) {
-          border: 1px dashed var(--disabled-background-color);
-        }
-
-        :host([dragover]) {
-          border: 1px solid var(--primary-color);
-          background-color: var(--light-primary-color);
-        }
-
-        :host([dragover]) * {
-          pointer-events: none;
-        }
-
-        #ripple {
-          top: 0;
-          left: 0;
+        vaadin-upload {
           width: 100%;
           height: 100%;
-          position: absolute;
+          padding: 25px;
+          display: flex;
+          align-items: center;
+          flex-direction: column-reverse;
         }
 
-        .container {
+        vaadin-upload[dragover] {
+          border: 2px solid var(--primary-color);
+        }
+
+        vaadin-upload[dragover-valid] {
+          background: var(--light-primary-color);
+          border-color: var(--primary-color);
+        }
+
+        vaadin-upload .container {
+          width: 100%;
+          height: fit-content;
           display: flex;
-          position: relative;
           align-items: center;
           flex-direction: column;
-          justify-content: center;
         }
 
-        .container .header-icon {
-          margin-bottom: 25px;
-          width: var(--casper-upload-dropzone-icon-size, 75px);
-          height: var(--casper-upload-dropzone-icon-size, 75px);
-          color: var(--casper-upload-dropzone-color, var(--primary-color));
+        vaadin-upload .container .header-icon {
+          width: 75px;
+          height: 75px;
+          color: var(--primary-color);
+          @apply --casper-upload-dropzone-header-icon;
         }
 
-        :host([disabled]) .container .header-icon,
-        :host([disabled]) .container .title-container {
-          color: var(--casper-upload-dropzone-disabled-color, var(--disabled-text-color));
-        }
-
-        .container .title-container {
+        vaadin-upload .container .title-container {
           font-size: 20px;
           font-weight: bold;
           margin-bottom: 15px;
-          color: var(--casper-upload-dropzone-color, var(--primary-color));
+          color: var(--primary-color);
+          @apply --casper-upload-dropzone-title;
         }
 
-        .container .sub-title-container {
+        vaadin-upload .container .sub-title-container {
           color: darkgray;
           margin-bottom: 15px;
+          @apply --casper-upload-dropzone-sub-title;
         }
 
-        .container #upload {
-          display: flex;
-          width: 100%;
-          padding: 0;
-          align-items: center;
-          flex-direction: column;
-        }
-
-        .container #upload casper-button {
+        vaadin-upload casper-button {
           margin: 0;
-        }
-
-        .container .upload-info {
-          color: #929292;
-          font-size: 0.9em;
-          display: flex;
-          margin-top: 25px;
-          align-items: center;
-        }
-
-        .container .upload-info casper-icon {
-          width: 25px;
-          height: 25px;
-          margin-right: 5px;
         }
       </style>
 
-      <div class="container">
-        <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
+      <vaadin-upload
+        id="upload"
+        class="casper-upload-dropzone"
+        files="{{__files}}"
+        accept="[[accept]]"
+        target="[[target]]"
+        timeout="[[timeout]]"
+        nodrop="[[disabled]]"
+        headers="[[__requestHeaders]]"
+        max-files="[[maxFiles]]"
+        max-file-size="[[maxFileSize]]">
+        <div class="container">
+          <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
 
-        <!--Title and sub-title-->
-        <template is="dom-if" if="[[title]]"><div class="title-container">[[title]]</div></template>
-        <template is="dom-if" if="[[subTitle]]"><div class="sub-title-container">[[subTitle]]</div></template>
-
-        <vaadin-upload
-          id="upload"
-          class="casper-upload-dropzone"
-          nodrop
-          files="{{__files}}"
-          accept="[[accept]]"
-          target="[[target]]"
-          timeout="[[timeout]]"
-          max-files="[[maxFiles]]"
-          max-files-reached="{{__maxFilesReached}}">
-          <casper-button slot="add-button" disabled="[[disabled]]">
-            [[addFileButtonText]]
-          </casper-button>
-        </vaadin-upload>
-
-        <div class="upload-info">
-          <casper-icon icon="fa-light:info-circle"></casper-icon>
-          [[__supportedExtensions(accept, maxFiles)]]
+          <!--Title and sub-title-->
+          <template is="dom-if" if="[[title]]"><div class="title-container">[[title]]</div></template>
+          <template is="dom-if" if="[[subTitle]]"><div class="sub-title-container">[[subTitle]]</div></template>
         </div>
-      </div>
+
+        <casper-button slot="add-button" disabled="[[disabled]]">
+          [[addFileButtonText]]
+        </casper-button>
+      </vaadin-upload>
     `;
   }
 
@@ -253,11 +232,6 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
     super.ready();
 
     this.__setupUploadTranslations();
-
-    this.shadowRoot.host.addEventListener('drop', event => this.__onDrop(event));
-    this.shadowRoot.host.addEventListener('dragover', event => this.__onDragOver(event));
-    this.shadowRoot.host.addEventListener('dragenter', event => this.__onDragEnter(event));
-    this.shadowRoot.host.addEventListener('dragleave', event => this.__onDragLeave(event));
 
     this.$.upload.addEventListener('file-reject', event => this.__onFileReject(event));
     this.$.upload.addEventListener('upload-request', event => this.__onUploadRequest(event));
@@ -272,41 +246,6 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
   }
 
   /**
-   * This method saves the accepted extensions in an array.
-   */
-  __acceptedExtensions () {
-    return this.accept.split(',').map(extension => extension.trim());
-  }
-
-  /**
-   * This method is called when the maximum number of files is reached or not.
-   */
-  __maxFilesReachedChanged () {
-    this.disabled = this.__maxFilesReached;
-  }
-
-  /**
-   * Displays a helper text which lists the allowed file extensions.
-   */
-  __supportedExtensions () {
-    const mimeTypesExtensions = {
-      'application/pdf': '.pdf',
-      'application/xml': '.xml',
-      'image/jpeg': '.jpg / .jpeg',
-      'image/png': '.png',
-      'text/html': '.html',
-      'text/plain': '.txt',
-      'text/xml': '.xml',
-    };
-
-    const acceptedExtensions = [...new Set(this.__acceptedExtensions().map(mimeType => mimeTypesExtensions[mimeType]))].join(' / ');
-
-    return this.maxFiles === Infinity
-      ? `Pode fazer upload de ficheiros com as seguintes extensões: ${acceptedExtensions}`
-      : `Pode fazer upload de ${this.maxFiles} ficheiro(s) com as seguintes extensões: ${acceptedExtensions}`;
-  }
-
-  /**
    * This method sets up the vaadin-upload translations.
    */
   __setupUploadTranslations () {
@@ -315,6 +254,11 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
       dropFiles: {
         one: 'Arraste o ficheiro para aqui',
         many: 'Arraste os ficheiros para aqui',
+      },
+      error: {
+        tooManyFiles: CasperUploadDropzoneErrors.TOO_MANY_FILES,
+        fileIsTooBig: CasperUploadDropzoneErrors.FILE_IS_TOO_BIG,
+        incorrectFileType: CasperUploadDropzoneErrors.INCORRECT_FILE_TYPE,
       },
       uploading: {
         status: {
@@ -334,6 +278,116 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
         }
       }
     };
+  }
+
+  __humanReadableExtensions () {
+    const mimeTypesExtensions = {
+      'application/pdf': '.pdf',
+      'application/xml': '.xml',
+      'image/jpeg': '.jpg / .jpeg',
+      'image/png': '.png',
+      'text/html': '.html',
+      'text/plain': '.txt',
+      'text/xml': '.xml',
+    };
+
+    return this.accept
+      .split(',')
+      .map(extension => extension.trim())
+      .map(acceptedMimeType => mimeTypesExtensions[acceptedMimeType]).join(' / ');
+  }
+
+  /**
+   * This method is called when the user tries to upload an invalid file.
+   */
+  __onFileReject (event) {
+    if (this.__rejectedFilesTimeout) clearTimeout(this.__rejectedFilesTimeout);
+
+    // Push the current rejected file.
+    this.__rejectedFiles.push(event.detail);
+    this.__rejectedFilesTimeout = setTimeout(() => {
+      this.__displayErrors(this.__rejectedFiles.map(rejectedFile => {
+        // This means that with this file, the maximum number of allowed ones was surpassed.
+        if (rejectedFile.error === CasperUploadDropzoneErrors.TOO_MANY_FILES) {
+          return `O ficheiro ${rejectedFile.file.name} foi rejeitado por exceder o máximo de ${this.maxFiles} ficheiro(s).`;
+        }
+
+        // This means the file exceeds the maximum allowed size.
+        if (rejectedFile.error === CasperUploadDropzoneErrors.FILE_IS_TOO_BIG) {
+          return `O ficheiro ${rejectedFile.file.name} foi rejeitado por ter ${this.__bytesToMegabytes(rejectedFile.file.size)}MB quando o limite é ${this.__bytesToMegabytes(this.maxFileSize)}MB.`;
+        }
+
+        // This means the file's extension is not accepted.
+        if (rejectedFile.error === CasperUploadDropzoneErrors.INCORRECT_FILE_TYPE) {
+          return `O ficheiro ${rejectedFile.file.name} foi rejeitado por ser de um tipo inválido. Só pode fazer upload das seguintes extensões - ${this.__humanReadableExtensions()}.`;
+        }
+      }));
+
+      this.__rejectedFiles = [];
+    }, 250);
+  }
+
+  /**
+   * This method is called when the request is successful and the file was uploaded.
+   *
+   * @param {Object} event The event's object.
+   */
+  __onUploadSuccess (event) {
+    if (event.detail.xhr.status === 200) {
+      this.dispatchEvent(new CustomEvent('on-upload-success', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          originalFileName: event.detail.file.name,
+          originalFileType: event.detail.file.type,
+          uploadedFile: JSON.parse(event.detail.xhr.response).file,
+          [this.additionalParamsKey]: event.detail.xhr[this.additionalParamsKey]
+        }
+      }));
+    }
+  }
+
+  /**
+   * This method is called when the upload component sends the file and we'll add two required headers.
+   *
+   * @param {Object} event The event's object.
+   */
+  __onUploadRequest (event) {
+    if (!this.additionalParams) return;
+
+    event.preventDefault();
+    event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
+    event.detail.xhr.send(event.detail.file);
+  }
+
+  /**
+   * This method converts a value currently in bytes to its equivalent in megabytes.
+   *
+   * @param {Number} bytes The number of bytes that'll be converted.
+   */
+  __bytesToMegabytes (bytes) {
+    return (bytes / (1024 * 1024)).toFixed(2);
+  }
+
+  /**
+   * This method displays the errors that occur when the user fails to upload some files.
+   *
+   * @param {Array} errors The list of errors.
+   */
+  __displayErrors (errors) {
+    const errorsContainer = document.createElement('ul');
+    errorsContainer.style.margin = 0;
+
+    errors.forEach(error => {
+      const errorContainer = document.createElement('li');
+      errorContainer.textContent = error;
+      errorsContainer.appendChild(errorContainer);
+    });
+
+    this.app.openToast({
+      backgroundColor: 'var(--status-red)',
+      text: errorsContainer.outerHTML
+    });
   }
 }
 
