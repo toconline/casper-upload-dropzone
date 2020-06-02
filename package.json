@@ -2,6 +2,8 @@
   "name": "@cloudware-casper/casper-upload-dropzone",
   "version": "0.0.0",
   "dependencies": {
+    "@cloudware-casper/casper-button": "^1.x",
+    "@cloudware-casper/casper-icons": "^1.x",
     "@polymer/polymer": "^3.0.0",
     "@vaadin/vaadin-upload": "^4.x"
   }
