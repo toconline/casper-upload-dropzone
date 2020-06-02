@@ -1,7 +1,6 @@
 import { VaadinUploadMixin } from './mixins/vaadin-upload-mixin.js';
 import { PointerEventsMixin } from './mixins/pointer-events-mixin.js';
 
-import '@polymer/paper-ripple/paper-ripple.js';
 import '@vaadin/vaadin-upload/vaadin-upload.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-button/casper-button.js';
@@ -28,7 +27,7 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
        */
       addFileButtonText: {
         type: String,
-        value: 'Carregar ficheiros'
+        value: 'Carregar ficheiro(s)'
       },
       /**
        * Additional parameters that will be included on the XMLHttpRequest.
@@ -170,20 +169,22 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
         }
 
         .container .header-icon {
-          width: 75px;
-          height: 75px;
-          color: var(--primary-color);
+          margin-bottom: 25px;
+          width: var(--casper-upload-dropzone-icon-size, 75px);
+          height: var(--casper-upload-dropzone-icon-size, 75px);
+          color: var(--casper-upload-dropzone-color, var(--primary-color));
         }
 
-        :host([disabled]) .container .header-icon {
-          color: var(--disabled-text-color);
+        :host([disabled]) .container .header-icon,
+        :host([disabled]) .container .title-container {
+          color: var(--casper-upload-dropzone-disabled-color, var(--disabled-text-color));
         }
 
         .container .title-container {
           font-size: 20px;
           font-weight: bold;
           margin-bottom: 15px;
-          color: var(--primary-color);
+          color: var(--casper-upload-dropzone-color, var(--primary-color));
         }
 
         .container .sub-title-container {
@@ -205,8 +206,9 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
 
         .container .upload-info {
           color: #929292;
+          font-size: 0.9em;
           display: flex;
-          margin-top: 15px;
+          margin-top: 25px;
           align-items: center;
         }
 
@@ -217,18 +219,12 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
         }
       </style>
 
-      <paper-ripple id="ripple"></paper-ripple>
-
       <div class="container">
         <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
 
-        <template is="dom-if" if="[[title]]">
-          <div class="title-container">[[title]]</div>
-        </template>
-
-        <template is="dom-if" if="[[subTitle]]">
-          <div class="sub-title-container">[[subTitle]]</div>
-        </template>
+        <!--Title and sub-title-->
+        <template is="dom-if" if="[[title]]"><div class="title-container">[[title]]</div></template>
+        <template is="dom-if" if="[[subTitle]]"><div class="sub-title-container">[[subTitle]]</div></template>
 
         <vaadin-upload
           id="upload"
@@ -259,8 +255,8 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
     this.__setupUploadTranslations();
 
     this.shadowRoot.host.addEventListener('drop', event => this.__onDrop(event));
-    this.shadowRoot.host.addEventListener('dragenter', () => this.__onDragEnter());
     this.shadowRoot.host.addEventListener('dragover', event => this.__onDragOver(event));
+    this.shadowRoot.host.addEventListener('dragenter', event => this.__onDragEnter(event));
     this.shadowRoot.host.addEventListener('dragleave', event => this.__onDragLeave(event));
 
     this.$.upload.addEventListener('file-reject', event => this.__onFileReject(event));
@@ -276,17 +272,17 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
   }
 
   /**
+   * This method saves the accepted extensions in an array.
+   */
+  __acceptedExtensions () {
+    return this.accept.split(',').map(extension => extension.trim());
+  }
+
+  /**
    * This method is called when the maximum number of files is reached or not.
    */
   __maxFilesReachedChanged () {
     this.disabled = this.__maxFilesReached;
-  }
-
-  /**
-   * This method saves the accepted extensions in an array.
-   */
-  __acceptChanged () {
-    this.__acceptedExtensions = this.accept.split(',').map(extension => extension.trim());
   }
 
   /**
@@ -303,7 +299,7 @@ class CasperUploadDropzone extends PointerEventsMixin(VaadinUploadMixin(PolymerE
       'text/xml': '.xml',
     };
 
-    const acceptedExtensions = [...new Set(this.accept.split(',').map(mimeType => mimeTypesExtensions[mimeType.trim()]))].join(' / ');
+    const acceptedExtensions = [...new Set(this.__acceptedExtensions().map(mimeType => mimeTypesExtensions[mimeType]))].join(' / ');
 
     return this.maxFiles === Infinity
       ? `Pode fazer upload de ficheiros com as seguintes extensões: ${acceptedExtensions}`

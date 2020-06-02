@@ -13,7 +13,7 @@ export const PointerEventsMixin = superClass => {
     /**
      * This method is called when the user leaves the dropzone with a file.
      */
-    __onDragLeave (event) {
+    __onDragLeave () {
       this.__removeDropzoneStyling();
     }
 
@@ -27,12 +27,12 @@ export const PointerEventsMixin = superClass => {
       event.preventDefault();
       this.__removeDropzoneStyling();
 
-      const droppedFiles = event.dataTransfer.files;
+      const droppedFiles = Array.from(event.dataTransfer.files);
 
       if (droppedFiles.length === 0 || this.disabled) return;
 
       // Check the number and type of files that were dropped into the component.
-      if (this.maxFiles < this.__files.length + droppedFiles.length || Array.from(droppedFiles).some(file => !this.__acceptedExtensions.includes(file.type))) {
+      if (this.maxFiles < this.__files.length + droppedFiles.length || droppedFiles.some(file => !this.__acceptedExtensions().includes(file.type))) {
         return this.__onFileReject();
       }
 
@@ -54,7 +54,6 @@ export const PointerEventsMixin = superClass => {
      * This method applies the dropzone styling, which is changing the border and triggering the ripple effect.
      */
     __applyDropzoneStyling () {
-      this.$.ripple.downAction();
       this.shadowRoot.host.setAttribute('dragover', '');
     }
 
@@ -62,7 +61,6 @@ export const PointerEventsMixin = superClass => {
      * This method removes the dropzone styling, which is resetting the border and removing the ripple effect.
      */
     __removeDropzoneStyling () {
-      this.$.ripple.upAction();
       this.shadowRoot.host.removeAttribute('dragover');
     }
   }
