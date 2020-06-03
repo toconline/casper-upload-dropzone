@@ -4,28 +4,30 @@ export const VaadinUploadMixin = superClass => {
   return class extends superClass {
     /**
      * This method is called when the user tries to upload an invalid file.
+     *
+     * @param {Object} event The event's object.
      */
     __onFileReject (event) {
-      const fileName = event.detail.file.name;
-      const fileSize = event.detail.file.size;
+      const { error, file } = event.detail;
 
-      switch (event.detail.error) {
+      switch (error) {
         case CasperUploadDropzoneErrors.TOO_MANY_FILES:
           // This means that with this file, the maximum number of allowed ones was surpassed.
-          this.__errors.push(`O ficheiro "${fileName}" foi rejeitado por exceder o máximo de ${this.maxFiles} ficheiro(s).`);
+          this.__errors.push(`O ficheiro "${file.name}" foi rejeitado por exceder o máximo de ${this.maxFiles} ficheiro(s).`);
           break;
         case CasperUploadDropzoneErrors.FILE_IS_TOO_BIG:
           // This means the file exceeds the maximum allowed size.
-          this.__errors.push(`O ficheiro "${fileName}" foi rejeitado por ter ${this.__bytesToMegabytes(fileSize)}MB quando o limite é ${this.__bytesToMegabytes(this.maxFileSize)}MB.`);
+          this.__errors.push(`O ficheiro "${file.name}" foi rejeitado por ter ${this.__bytesToMegabytes(file.size)}MB quando o limite é ${this.__bytesToMegabytes(this.maxFileSize)}MB.`);
           break;
         case CasperUploadDropzoneErrors.INCORRECT_FILE_TYPE:
           // This means the file's extension is not accepted.
-          this.__errors.push(`O ficheiro "${fileName}" foi rejeitado por ser de um tipo inválido. Só pode fazer upload das seguintes extensões - ${this.__humanReadableExtensions()}.`);
+          this.__errors.push(`O ficheiro "${file.name}" foi rejeitado por ser de um tipo inválido. Só pode fazer upload das seguintes extensões - ${this.__humanReadableExtensions()}.`);
           break;
       }
 
       this.__displayErrors();
     }
+
     /**
      * This method is called before the request is sent.
      *
@@ -43,23 +45,26 @@ export const VaadinUploadMixin = superClass => {
         this.__displayErrors();
       }
     }
+
     /**
      * This method is called when the request is successful and the file was uploaded.
      *
      * @param {Object} event The event's object.
      */
     __onUploadSuccess (event) {
-      if (event.detail.xhr.status === 200) {
+      const { xhr, file } = event.detail;
+
+      if (xhr.status === 200) {
         const eventDetail = {
-          originalFileName: event.detail.file.name,
-          originalFileType: event.detail.file.type,
-          uploadedFile: JSON.parse(event.detail.xhr.response).file,
-          [this.additionalParamsKey]: event.detail.xhr[this.additionalParamsKey]
+          originalFileName: file.name,
+          originalFileType: file.type,
+          uploadedFile: JSON.parse(xhr.response).file,
+          [this.additionalParamsKey]: xhr[this.additionalParamsKey]
         };
 
         // Include the file properties that the developer requested.
         if (this.responseFileProperties.length > 0) {
-          this.responseFileProperties.forEach(property => eventDetail[property] = event.detail.file[property]);
+          this.responseFileProperties.forEach(property => eventDetail[property] = file[property]);
         }
 
         this.dispatchEvent(new CustomEvent('on-upload-success', {
