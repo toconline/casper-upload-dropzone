@@ -113,15 +113,6 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         value: Infinity
       },
       /**
-       * The file properties that should be included in the response.
-       *
-       * @type {Array}
-       */
-      responseFileProperties: {
-        type: Array,
-        value: () => []
-      },
-      /**
        * The component's sub title.
        *
        * @type {String}
@@ -181,16 +172,12 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
   static get template () {
     return html`
       <style>
-        :host {
-          display: block;
-        }
-
         vaadin-upload {
           width: 100%;
           height: 100%;
-          padding: 25px;
           display: flex;
-          align-items: center;
+          overflow: auto;
+          padding: 0 25px;
           box-sizing: border-box;
           flex-direction: column-reverse;
           @apply --casper-upload-dropzone-vaadin-upload;
@@ -214,11 +201,10 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         }
 
         vaadin-upload .container {
-          width: 100%;
-          height: fit-content;
           display: flex;
           align-items: center;
           flex-direction: column;
+          margin-bottom: 20px;
           @apply --casper-upload-dropzone-container;
         }
 
@@ -245,7 +231,6 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
         vaadin-upload .container casper-notice {
           width: 100%;
-          margin-bottom: 20px;
           @apply --casper-upload-dropzone-notice;
         }
 

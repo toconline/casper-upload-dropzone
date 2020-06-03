@@ -58,22 +58,15 @@ export const VaadinUploadMixin = superClass => {
       const { xhr, file } = event.detail;
 
       if (xhr.status === 200) {
-        const eventDetail = {
-          originalFileName: file.name,
-          originalFileType: file.type,
-          uploadedFile: JSON.parse(xhr.response).file,
-          [this.additionalParamsKey]: xhr[this.additionalParamsKey]
-        };
-
-        // Include the file properties that the developer requested.
-        if (this.responseFileProperties.length > 0) {
-          this.responseFileProperties.forEach(property => eventDetail[property] = file[property]);
-        }
-
         this.dispatchEvent(new CustomEvent('on-upload-success', {
           bubbles: true,
           composed: true,
-          detail: eventDetail
+          detail: {
+            originalFileName: file.name,
+            originalFileType: file.type,
+            uploadedFile: JSON.parse(xhr.response).file,
+            [this.additionalParamsKey]: xhr[this.additionalParamsKey]
+          }
         }));
       }
     }
