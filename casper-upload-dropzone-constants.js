@@ -1,0 +1,5 @@
+export const CasperUploadDropzoneErrors = {
+  TOO_MANY_FILES: 'TOO_MANY_FILES',
+  FILE_IS_TOO_BIG: 'FILE_IS_TOO_BIG',
+  INCORRECT_FILE_TYPE: 'INCORRECT_FILE_TYPE'
+}

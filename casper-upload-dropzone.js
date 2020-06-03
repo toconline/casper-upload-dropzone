@@ -1,3 +1,4 @@
+import { VaadinUploadMixin } from './mixins/vaadin-upload-events-mixin.js';
 import { CasperUploadDropzoneErrors } from './casper-upload-dropzone-constants.js';
 
 import '@vaadin/vaadin-upload/vaadin-upload.js';
@@ -5,7 +6,7 @@ import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-button/casper-button.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
-class CasperUploadDropzone extends PolymerElement {
+class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
   static get properties () {
     return {
@@ -32,9 +33,7 @@ class CasperUploadDropzone extends PolymerElement {
        *
        * @type {Object}
        */
-      additionalParams: {
-        type: Object
-      },
+      additionalParams: Object,
       /**
        * The XHR property in which we'll save the aforementioned additional parameters.
        *
@@ -103,37 +102,45 @@ class CasperUploadDropzone extends PolymerElement {
        *
        * @type {String}
        */
-      subTitle: {
-        type: String,
-      },
+      subTitle: String,
       /**
        * The URL where the files will be uploaded.
        *
        * @type {String}
        */
-      target: {
-        type: String
-      },
+      target: String,
       /**
        * Maximum time in milliseconds to upload the file.
        *
        * @type {Number}
        */
-      timeout: {
-        type: Number
-      },
+      timeout: Number,
       /**
        * The component's title.
        *
        * @type {String}
        */
-      title: {
-        type: String,
-      },
-      __rejectedFiles: {
+      title: String,
+      /**
+       * The list of errors that will eventually be displayed.
+       *
+       * @type {Array}
+       */
+      __errors: {
         type: Array,
         value: []
       },
+      /**
+       * The list of files that are in the upload component.
+       *
+       * @type {Array}
+       */
+      __files: Array,
+      /**
+       * The list of headers that will be sent on every request.
+       *
+       * @type {Object}
+       */
       __requestHeaders: {
         type: Object,
         value: () => ({
@@ -143,6 +150,7 @@ class CasperUploadDropzone extends PolymerElement {
       }
     };
   }
+
   static get template () {
     return html`
       <style>
@@ -234,6 +242,7 @@ class CasperUploadDropzone extends PolymerElement {
     this.__setupUploadTranslations();
 
     this.$.upload.addEventListener('file-reject', event => this.__onFileReject(event));
+    this.$.upload.addEventListener('upload-before', event => this.__onUploadBefore(event));
     this.$.upload.addEventListener('upload-request', event => this.__onUploadRequest(event));
     this.$.upload.addEventListener('upload-success', event => this.__onUploadSuccess(event));
   }
@@ -246,40 +255,8 @@ class CasperUploadDropzone extends PolymerElement {
   }
 
   /**
-   * This method sets up the vaadin-upload translations.
+   * This method returns the allowwd extensions in an understandable way.
    */
-  __setupUploadTranslations () {
-    this.$.upload.i18n = {
-      ...this.$.upload.i18n,
-      dropFiles: {
-        one: 'Arraste o ficheiro para aqui',
-        many: 'Arraste os ficheiros para aqui',
-      },
-      error: {
-        tooManyFiles: CasperUploadDropzoneErrors.TOO_MANY_FILES,
-        fileIsTooBig: CasperUploadDropzoneErrors.FILE_IS_TOO_BIG,
-        incorrectFileType: CasperUploadDropzoneErrors.INCORRECT_FILE_TYPE,
-      },
-      uploading: {
-        status: {
-          held: 'Em fila',
-          stalled: 'Upload pausado',
-          connecting: 'A conectar ao servidor...',
-          processing: 'A fazer upload do ficheiro...',
-        },
-        error: {
-          forbidden: 'Servidor indisponível',
-          serverUnavailable: 'Servidor indisponível',
-          unexpectedServerError: 'Ocorreu um erro inesperado no servidor',
-        },
-        remainingTime: {
-          prefix: 'Tempo restante: ',
-          unknown: 'Tempo restante desconhecido'
-        }
-      }
-    };
-  }
-
   __humanReadableExtensions () {
     const mimeTypesExtensions = {
       'application/pdf': '.pdf',
@@ -298,69 +275,6 @@ class CasperUploadDropzone extends PolymerElement {
   }
 
   /**
-   * This method is called when the user tries to upload an invalid file.
-   */
-  __onFileReject (event) {
-    if (this.__rejectedFilesTimeout) clearTimeout(this.__rejectedFilesTimeout);
-
-    // Push the current rejected file.
-    this.__rejectedFiles.push(event.detail);
-    this.__rejectedFilesTimeout = setTimeout(() => {
-      this.__displayErrors(this.__rejectedFiles.map(rejectedFile => {
-        // This means that with this file, the maximum number of allowed ones was surpassed.
-        if (rejectedFile.error === CasperUploadDropzoneErrors.TOO_MANY_FILES) {
-          return `O ficheiro ${rejectedFile.file.name} foi rejeitado por exceder o máximo de ${this.maxFiles} ficheiro(s).`;
-        }
-
-        // This means the file exceeds the maximum allowed size.
-        if (rejectedFile.error === CasperUploadDropzoneErrors.FILE_IS_TOO_BIG) {
-          return `O ficheiro ${rejectedFile.file.name} foi rejeitado por ter ${this.__bytesToMegabytes(rejectedFile.file.size)}MB quando o limite é ${this.__bytesToMegabytes(this.maxFileSize)}MB.`;
-        }
-
-        // This means the file's extension is not accepted.
-        if (rejectedFile.error === CasperUploadDropzoneErrors.INCORRECT_FILE_TYPE) {
-          return `O ficheiro ${rejectedFile.file.name} foi rejeitado por ser de um tipo inválido. Só pode fazer upload das seguintes extensões - ${this.__humanReadableExtensions()}.`;
-        }
-      }));
-
-      this.__rejectedFiles = [];
-    }, 250);
-  }
-
-  /**
-   * This method is called when the request is successful and the file was uploaded.
-   *
-   * @param {Object} event The event's object.
-   */
-  __onUploadSuccess (event) {
-    if (event.detail.xhr.status === 200) {
-      this.dispatchEvent(new CustomEvent('on-upload-success', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          originalFileName: event.detail.file.name,
-          originalFileType: event.detail.file.type,
-          uploadedFile: JSON.parse(event.detail.xhr.response).file,
-          [this.additionalParamsKey]: event.detail.xhr[this.additionalParamsKey]
-        }
-      }));
-    }
-  }
-
-  /**
-   * This method is called when the upload component sends the file and we'll add two required headers.
-   *
-   * @param {Object} event The event's object.
-   */
-  __onUploadRequest (event) {
-    if (!this.additionalParams) return;
-
-    event.preventDefault();
-    event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
-    event.detail.xhr.send(event.detail.file);
-  }
-
-  /**
    * This method converts a value currently in bytes to its equivalent in megabytes.
    *
    * @param {Number} bytes The number of bytes that'll be converted.
@@ -371,23 +285,21 @@ class CasperUploadDropzone extends PolymerElement {
 
   /**
    * This method displays the errors that occur when the user fails to upload some files.
-   *
-   * @param {Array} errors The list of errors.
    */
-  __displayErrors (errors) {
-    const errorsContainer = document.createElement('ul');
-    errorsContainer.style.margin = 0;
+  __displayErrors () {
+    if (this.__displayErrorsTimeout) clearTimeout(this.__displayErrorsTimeout);
 
-    errors.forEach(error => {
-      const errorContainer = document.createElement('li');
-      errorContainer.textContent = error;
-      errorsContainer.appendChild(errorContainer);
-    });
+    this.__displayErrorsTimeout = setTimeout(() => {
+      // Open the application's toast displaying why certain files were rejected.
+      this.app.openToast({
+        text: this.__errors.join('<br />'),
+        backgroundColor: 'var(--status-red)',
+        duration: 5000 * this.__errors.length
+      });
 
-    this.app.openToast({
-      backgroundColor: 'var(--status-red)',
-      text: errorsContainer.outerHTML
-    });
+      // Clear the errors so they do not get displayed again.
+      this.__errors = [];
+    }, 250);
   }
 }
 
