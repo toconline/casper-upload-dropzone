@@ -62,6 +62,15 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         reflectToAttribute: true
       },
       /**
+       * The list of files that are in the upload component.
+       *
+       * @type {Array}
+       */
+      files: {
+        type: Array,
+        notify: true
+      },
+      /**
        * The component's header icon.
        *
        * @type {String}
@@ -139,12 +148,6 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         type: Array,
         value: () => []
       },
-      /**
-       * The list of files that are in the upload component.
-       *
-       * @type {Array}
-       */
-      __files: Array,
       /**
        * The list of headers that will be sent on every request.
        *
@@ -254,7 +257,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
       <vaadin-upload
         id="upload"
         class="casper-upload-dropzone"
-        files="{{__files}}"
+        files="{{files}}"
         accept="[[accept]]"
         target="[[target]]"
         timeout="[[timeout]]"
@@ -302,7 +305,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
    * This method clears all the files from the dropzone.
    */
   clearUploadedFiles () {
-    this.__files = [];
+    this.files = [];
   }
 
   /**

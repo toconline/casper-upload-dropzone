@@ -34,7 +34,7 @@ export const VaadinUploadMixin = superClass => {
      * @param {Object} event The event's object.
      */
     __onUploadBefore (event) {
-      const uploadedFilesTotalSize = this.__files
+      const uploadedFilesTotalSize = this.files
         .filter(file => !file.held)
         .reduce((totalSize, file) => totalSize + file.size, 0);
 
