@@ -46,6 +46,9 @@ export const VaadinUploadMixin = superClass => {
 
         this.__errors.push(error || `O ficheiro "${event.detail.file.name}" não foi carregado por ultrapassar o limite total de ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`);
         this.__displayErrors();
+
+        // Remove the rejected file from the list.
+        this.files = this.files.filter(file => file !== event.detail.file);
       }
     }
 
