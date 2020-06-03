@@ -34,14 +34,17 @@ export const VaadinUploadMixin = superClass => {
      * @param {Object} event The event's object.
      */
     __onUploadBefore (event) {
+      let error;
       const uploadedFilesTotalSize = this.files
         .filter(file => !file.held)
         .reduce((totalSize, file) => totalSize + file.size, 0);
 
-      if (uploadedFilesTotalSize + event.detail.file.size > this.maxFilesTotalSize) {
+      // Evaluate if the file is either surpassing the total limit or failing the custom validation.
+      if ((uploadedFilesTotalSize + event.detail.file.size > this.maxFilesTotalSize) ||
+        (this.beforeUploadValidator && (error = this.beforeUploadValidator(event.detail.file)))) {
         event.preventDefault();
 
-        this.__errors.push(`O ficheiro "${event.detail.file.name}" não foi carregado por ultrapassar o limite total de ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`);
+        this.__errors.push(error || `O ficheiro "${event.detail.file.name}" não foi carregado por ultrapassar o limite total de ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`);
         this.__displayErrors();
       }
     }

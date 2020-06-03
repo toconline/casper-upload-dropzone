@@ -53,6 +53,12 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         value: () => { return window.app; }
       },
       /**
+       * Function that will be invoked before uploading a file to allow some extra validations.
+       *
+       * @type {Function}
+       */
+      beforeUploadValidator: Function,
+      /**
        * Flag that enables / disables the upload component.
        *
        * @type {Boolean}
