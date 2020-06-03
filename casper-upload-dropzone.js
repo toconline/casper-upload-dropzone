@@ -98,6 +98,15 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         value: Infinity
       },
       /**
+       * The file properties that should be included in the response.
+       *
+       * @type {Array}
+       */
+      responseFileProperties: {
+        type: Array,
+        value: []
+      },
+      /**
        * The component's sub title.
        *
        * @type {String}
