@@ -143,18 +143,6 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         value: () => []
       },
       /**
-       * The list of headers that will be sent on every request.
-       *
-       * @type {Object}
-       */
-      __headers: {
-        type: Object,
-        value: () => ({
-          'Content-Disposition': 'form-data',
-          'Content-Type': 'application/octet-stream'
-        })
-      },
-      /**
        * A flag which states if the component has reached the maximum number of files.
        *
        * @type {Boolean}
@@ -252,12 +240,12 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
       <vaadin-upload
         id="upload"
         class="casper-upload-dropzone"
+        form-data-name="my-attachment"
         files="{{files}}"
         accept="[[accept]]"
         target="[[target]]"
         timeout="[[timeout]]"
         nodrop="[[disabled]]"
-        headers="[[__headers]]"
         max-files="[[maxFiles]]"
         max-file-size="[[maxFileSize]]"
         max-files-reached="{{__maxFilesReached}}">

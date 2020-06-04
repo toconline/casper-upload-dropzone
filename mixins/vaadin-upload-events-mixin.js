@@ -78,11 +78,17 @@ export const VaadinUploadMixin = superClass => {
 
     /**
      * This method is called when the upload component is about to send a file and adds the additional parameters if there are any.
+     *
+     * @param {Object} event The event's object.
      */
-    __onUploadRequest () {
-      if (this.additionalParams) {
-        event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
-      }
+    __onUploadRequest (event) {
+      event.preventDefault();
+
+      if (this.additionalParams) event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
+
+      event.detail.xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      event.detail.xhr.setRequestHeader('Content-Disposition', `form-data; name="${event.detail.file.formDataName}"; filename="uploaded_file";`);
+      event.detail.xhr.send(event.detail.file);
     }
 
     /**
