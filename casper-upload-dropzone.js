@@ -177,9 +177,11 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           height: 100%;
           padding: 25px;
           display: flex;
-          overflow: auto;
+          overflow-y: auto;
+          overflow-x: hidden;
           box-sizing: border-box;
-          flex-direction: column;
+          flex-direction: column-reverse;
+          justify-content: space-between;
           @apply --casper-upload-dropzone-vaadin-upload;
         }
 
@@ -216,10 +218,8 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
         vaadin-upload .container .title-container,
         vaadin-upload .container .sub-title-container {
-          width: 100%;
-          display: flex;
+          text-align: center;
           margin-bottom: 15px;
-          justify-content: center;
         }
 
         vaadin-upload .container .title-container {
@@ -264,7 +264,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         max-files="[[maxFiles]]"
         max-file-size="[[maxFileSize]]"
         max-files-reached="{{__maxFilesReached}}">
-        <div class="container" slot="add-button" on-click="__onContainerClick">
+        <div class="container">
           <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
 
           <!--Title and sub-title-->
@@ -280,10 +280,12 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
             </ul>
           </casper-notice>
 
-          <casper-button disabled="[[disabled]]">
+          <casper-button disabled="[[disabled]]" on-click="__onAddFilesClick">
             [[addFileButtonText]]
           </casper-button>
         </div>
+
+        <div slot="add-button"></div>
       </vaadin-upload>
     `;
   }
@@ -300,14 +302,10 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
   }
 
   /**
-   * This method is invoked when the used clicks anywhere in the container element.
-   *
-   * @param {Object} event The event's object.
+   * This method is invoked when the used clicks on the add files button.
    */
-  __onContainerClick (event) {
-    if (!event.composedPath().some(element => element.nodeName && element.nodeName.toLowerCase() === 'casper-button')) {
-      event.stopPropagation();
-    }
+  __onAddFilesClick () {
+    this.$.upload.$.fileInput.click();
   }
 
   /**
@@ -396,9 +394,9 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
     this.__displayErrorsTimeout = setTimeout(() => {
       // Open the application's toast displaying why certain files were rejected.
       this.app.openToast({
+        duration: 10000,
         text: this.__errors.join('<br />'),
         backgroundColor: 'var(--status-red)',
-        duration: 5000 * this.__errors.length
       });
 
       // Clear the errors so they do not get displayed again.
