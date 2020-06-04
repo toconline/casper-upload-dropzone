@@ -305,6 +305,8 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
    * This method is invoked when the used clicks on the add files button.
    */
   __onAddFilesClick () {
+    if (this.disabled) return;
+
     this.$.upload.$.fileInput.click();
   }
 
