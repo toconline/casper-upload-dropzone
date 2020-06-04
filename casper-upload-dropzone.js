@@ -63,10 +63,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
        *
        * @type {Boolean}
        */
-      disabled: {
-        type: Boolean,
-        reflectToAttribute: true
-      },
+      disabled: Boolean,
       /**
        * The list of files that are in the upload component.
        *

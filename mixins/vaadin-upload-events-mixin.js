@@ -35,20 +35,22 @@ export const VaadinUploadMixin = superClass => {
      */
     __onUploadBefore (event) {
       let error;
+      const { file } = event.detail;
+
       const uploadedFilesTotalSize = this.files
         .filter(file => !file.held)
         .reduce((totalSize, file) => totalSize + file.size, 0);
 
       // Evaluate if the file is either surpassing the total limit or failing the custom validation.
-      if ((uploadedFilesTotalSize + event.detail.file.size > this.maxFilesTotalSize) ||
-        (this.beforeUploadValidator && (error = this.beforeUploadValidator(event.detail.file)))) {
+      if (uploadedFilesTotalSize + file.size > this.maxFilesTotalSize ||
+        (this.beforeUploadValidator && (error = this.beforeUploadValidator(file)))) {
         event.preventDefault();
 
-        this.__errors.push(error || `O ficheiro "${event.detail.file.name}" não foi carregado por ultrapassar o limite total de ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`);
+        this.__errors.push(error || `O ficheiro "${file.name}" não foi carregado por ultrapassar o limite total de ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`);
         this.__displayErrors();
 
         // Remove the rejected file from the list.
-        this.files = this.files.filter(file => file !== event.detail.file);
+        this.files = this.files.filter(file => file !== file);
       }
     }
 
@@ -73,8 +75,9 @@ export const VaadinUploadMixin = superClass => {
         }));
       }
     }
+
     /**
-     * This method is called when the upload component sends the file and we'll add two required headers.
+     * This method is called when the upload component is about to send a file and adds the additional parameters if there are any.
      */
     __onUploadRequest () {
       if (this.additionalParams) {
