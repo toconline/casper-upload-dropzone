@@ -175,7 +175,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         vaadin-upload {
           width: 100%;
           height: 100%;
-          padding: 25px;
+          padding: 0 25px;
           display: flex;
           overflow-y: auto;
           overflow-x: hidden;
@@ -284,8 +284,6 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
             [[addFileButtonText]]
           </casper-button>
         </div>
-
-        <div slot="add-button"></div>
       </vaadin-upload>
     `;
   }
