@@ -175,11 +175,11 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         vaadin-upload {
           width: 100%;
           height: 100%;
+          padding: 25px;
           display: flex;
           overflow: auto;
-          padding: 0 25px;
           box-sizing: border-box;
-          flex-direction: column-reverse;
+          flex-direction: column;
           @apply --casper-upload-dropzone-vaadin-upload;
         }
 
@@ -204,33 +204,39 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           display: flex;
           align-items: center;
           flex-direction: column;
-          margin-bottom: 20px;
           @apply --casper-upload-dropzone-container;
         }
 
         vaadin-upload .container .header-icon {
-          width: 75px;
-          height: 75px;
+          width: 100px;
+          height: 100px;
           color: var(--primary-color);
           @apply --casper-upload-dropzone-header-icon;
+        }
+
+        vaadin-upload .container .title-container,
+        vaadin-upload .container .sub-title-container {
+          width: 100%;
+          display: flex;
+          margin-bottom: 15px;
+          justify-content: center;
         }
 
         vaadin-upload .container .title-container {
           font-size: 20px;
           font-weight: bold;
-          margin-bottom: 15px;
           color: var(--primary-color);
           @apply --casper-upload-dropzone-title;
         }
 
         vaadin-upload .container .sub-title-container {
           color: darkgray;
-          margin-bottom: 15px;
           @apply --casper-upload-dropzone-sub-title;
         }
 
         vaadin-upload .container casper-notice {
           width: 100%;
+          margin-bottom: 20px;
           @apply --casper-upload-dropzone-notice;
         }
 
@@ -241,6 +247,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
         vaadin-upload casper-button {
           margin: 0;
+          width: 100%;
           @apply --casper-upload-dropzone-button;
         }
       </style>
@@ -257,7 +264,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         max-files="[[maxFiles]]"
         max-file-size="[[maxFileSize]]"
         max-files-reached="{{__maxFilesReached}}">
-        <div class="container">
+        <div class="container" slot="add-button" on-click="__onContainerClick">
           <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
 
           <!--Title and sub-title-->
@@ -272,11 +279,11 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
               <li>[[__acceptInfo(accept)]]</li>
             </ul>
           </casper-notice>
-        </div>
 
-        <casper-button slot="add-button" disabled="[[disabled]]">
-          [[addFileButtonText]]
-        </casper-button>
+          <casper-button disabled="[[disabled]]">
+            [[addFileButtonText]]
+          </casper-button>
+        </div>
       </vaadin-upload>
     `;
   }
@@ -290,6 +297,17 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
     this.$.upload.addEventListener('upload-before', event => this.__onUploadBefore(event));
     this.$.upload.addEventListener('upload-request', event => this.__onUploadRequest(event));
     this.$.upload.addEventListener('upload-success', event => this.__onUploadSuccess(event));
+  }
+
+  /**
+   * This method is invoked when the used clicks anywhere in the container element.
+   *
+   * @param {Object} event The event's object.
+   */
+  __onContainerClick (event) {
+    if (!event.composedPath().some(element => element.nodeName && element.nodeName.toLowerCase() === 'casper-button')) {
+      event.stopPropagation();
+    }
   }
 
   /**
