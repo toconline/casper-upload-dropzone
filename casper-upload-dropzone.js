@@ -114,7 +114,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
        *
        * @type {Boolean}
        */
-      noRepeatedFiles: Boolean,
+      noDuplicates: Boolean,
       /**
        * The component's sub title.
        *
