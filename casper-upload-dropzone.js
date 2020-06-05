@@ -202,6 +202,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
         vaadin-upload .container {
           display: flex;
+          margin-bottom: 15px;
           align-items: center;
           flex-direction: column;
           @apply --casper-upload-dropzone-container;
@@ -234,7 +235,6 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
         vaadin-upload .container casper-notice {
           width: 100%;
-          margin-bottom: 20px;
           @apply --casper-upload-dropzone-notice;
         }
 
@@ -244,13 +244,12 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         }
 
         vaadin-upload casper-button {
-          margin: 0;
           width: 100%;
+          margin: 15px 0;
           @apply --casper-upload-dropzone-button;
         }
 
         vaadin-upload .drop-label {
-          margin: 15px 0;
           display: flex;
           align-items: center;
         }
