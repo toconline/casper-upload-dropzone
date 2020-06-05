@@ -34,24 +34,32 @@ export const VaadinUploadMixin = superClass => {
      * @param {Object} event The event's object.
      */
     __onUploadBefore (event) {
-      let error;
+      let fileError;
       const { file } = event.detail;
 
-      const uploadedFilesTotalSize = this.files
-        .filter(file => !file.held)
-        .reduce((totalSize, file) => totalSize + file.size, 0);
+      const uploadedFiles = this.files.filter(file => !file.held);
+      const uploadedFilesSize = uploadedFiles.reduce((totalSize, file) => totalSize + file.size, 0);
 
-      // Evaluate if the file is either surpassing the total limit or failing the custom validation.
-      if (uploadedFilesTotalSize + file.size > this.maxFilesTotalSize ||
-        (this.beforeUploadValidator && (error = this.beforeUploadValidator(file)))) {
-        event.preventDefault();
-
-        this.__errors.push(error || `O ficheiro "${file.name}" não foi carregado por ultrapassar o limite total de ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`);
-        this.__displayErrors();
-
-        // Remove the rejected file from the list.
-        this.files = this.files.filter(file => file !== file);
+      if (this.beforeUploadValidator && (error = this.beforeUploadValidator(file))) {
+        // Check if the file passes the custom validator implemented by the developer.
+        fileError = error;
+      } else if (uploadedFiles + file.size > this.maxFilesTotalSize) {
+        // Check if the uploaded file surpasses the maximum total size.
+        fileError = `O ficheiro "${file.name}" não foi carregado por ultrapassar o limite total de ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`;
+      } else if (this.noRepeatedFiles && uploadedFiles.some(uploadedFile => uploadedFile.name === file.name)) {
+        // Check if the uploaded file is already in the list and the developer explicitly doesn't want that behavior.
+        fileError = `Não pode carregar o ficheiro "${file.name}" novamente.`;
       }
+
+      if (!fileError) return;
+
+      event.preventDefault();
+
+      this.__errors.push(fileError);
+      this.__displayErrors();
+
+      // Remove the invalid file from the list.
+      this.files = this.files.filter(existingFile => existingFile !== file);
     }
 
     /**

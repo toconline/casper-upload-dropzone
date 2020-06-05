@@ -110,6 +110,12 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         value: Infinity
       },
       /**
+       * This flag prevents the user of uploading the same file twice.
+       *
+       * @type {Boolean}
+       */
+      noRepeatedFiles: Boolean,
+      /**
        * The component's sub title.
        *
        * @type {String}
