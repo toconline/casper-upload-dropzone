@@ -22,6 +22,14 @@
   dependencies:
     "@polymer/polymer" "^3.x"
 
+"@cloudware-casper/casper-notice@^1.x":
+  version "1.4.0"
+  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-notice/1.4.0/9bab7c800e631e57bc471555b3af3d7d950e70968fcad6e187dc82662141f31e#5e2d3ba32d0264afff8faee983ce89bdc1af2f25"
+  integrity sha512-qQJy+PAEDSu3hpWMk4Ansc7sQozUYCLlv99a7aIFS/IbOH78G2oVvOy1x+YmL/dcqt/TlRr41IxnhjZEt0xR6A==
+  dependencies:
+    "@cloudware-casper/casper-icons" "^1.x"
+    "@polymer/polymer" "^3.x"
+
 "@polymer/font-roboto@^3.0.1":
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/@polymer/font-roboto/-/font-roboto-3.0.2.tgz#80cdaa7225db2359130dfb2c6d9a3be1820020c3"

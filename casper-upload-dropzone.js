@@ -4,6 +4,7 @@ import { CasperUploadDropzoneErrors } from './casper-upload-dropzone-constants.j
 import '@vaadin/vaadin-upload/vaadin-upload.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-button/casper-button.js';
+import '@cloudware-casper/casper-notice/casper-notice.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
