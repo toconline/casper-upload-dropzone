@@ -37,7 +37,7 @@ export const VaadinUploadMixin = superClass => {
       let fileError;
       const { file } = event.detail;
 
-      const uploadedFiles = this.files.filter(file => !file.held);
+      const uploadedFiles = this.__files.filter(file => !file.held);
       const uploadedFilesSize = uploadedFiles.reduce((totalSize, file) => totalSize + file.size, 0);
 
       if (this.beforeUploadValidator && (error = this.beforeUploadValidator(file))) {
@@ -59,7 +59,7 @@ export const VaadinUploadMixin = superClass => {
       this.__displayErrors();
 
       // Remove the invalid file from the list.
-      this.files = this.files.filter(existingFile => existingFile !== file);
+      this.__files = this.__files.filter(existingFile => existingFile !== file);
     }
 
     /**

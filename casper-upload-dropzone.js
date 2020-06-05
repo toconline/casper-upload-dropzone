@@ -263,7 +263,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         id="upload"
         class="casper-upload-dropzone"
         form-data-name="my-attachment"
-        files="{{files}}"
+        files="{{__files}}"
         accept="[[accept]]"
         target="[[target]]"
         timeout="[[timeout]]"
@@ -299,6 +299,12 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
     `;
   }
 
+  static get observers () {
+    return [
+      '__filesChanged(__files.splices)'
+    ];
+  }
+
   ready () {
     super.ready();
 
@@ -314,7 +320,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
    * This method clears all the files from the dropzone.
    */
   clearUploadedFiles () {
-    this.files = [];
+    this.__files = [];
   }
 
   /**
@@ -328,10 +334,17 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
   }
 
   /**
-   * This method get invoked when the maximum number of files is reached.
+   * This method is invoked when the maximum number of files is reached.
    */
   __maxFilesReachedChanged () {
     this.disabled = this.__maxFilesReached;
+  }
+
+  /**
+   * This method is invoked when the list of files changes.
+   */
+  __filesChanged () {
+    this.files = [...this.__files];
   }
 
   /**
