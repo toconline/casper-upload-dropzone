@@ -263,11 +263,8 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           <template is="dom-if" if="[[subTitle]]"><div class="sub-title-container">[[subTitle]]</div></template>
 
           <casper-notice title="Informação">
-            <ul>
-              <li>[[__maxFilesInfo(maxFiles)]]</li>
-              <li>[[__maxFileSizeInfo(maxFileSize)]]</li>
-              <li>[[__maxFileTotalSizeInfo(maxFilesTotalSize)]]</li>
-              <li>[[__acceptInfo(accept)]]</li>
+            <ul id="upload-info">
+              [[__displayUploadInfo(maxFiles, maxFileSize, maxFilesTotalSize, accept)]]
             </ul>
           </casper-notice>
 
@@ -315,37 +312,41 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
   }
 
   /**
-   * This method displays the maximum size for each uploaded file.
+   * This method displays the upload information to the user - the maximum size per-file and for all files, the accepted extensions and the
+   * maximum number of files.
    */
-  __maxFileSizeInfo () {
-    return this.maxFileSize === Infinity
-      ? 'Não existe limite para o tamanho de cada ficheiro.'
-      : `Cada ficheiro tem que ter no máximo um tamanho de ${this.__bytesToMegabytes(this.maxFileSize)}MB.`;
-  }
+  __displayUploadInfo () {
+    this.$['upload-info'].innerHTML = '';
 
-  /**
-   * This method displays the maximum number of files which can be uploaded.
-   */
-  __maxFilesInfo () {
-    return this.maxFiles === Infinity
+    // Maximum size per-file.
+    if (this.maxFileSize !== Infinity) {
+      this.__addItemToUploadInfo(`Cada ficheiro tem que ter no máximo um tamanho de ${this.__bytesToMegabytes(this.maxFileSize)}MB.`);
+    }
+
+    // The accepted extensions.
+    this.__addItemToUploadInfo(`Pode fazer upload de ficheiros com a seguinte extensão: ${this.__humanReadableExtensions()}.`);
+
+    // The maximum number of files.
+    this.__addItemToUploadInfo(this.maxFiles === Infinity
       ? 'Não existe limite para o número de ficheiros.'
-      : `Só pode fazer upload de ${this.maxFiles} ficheiro(s).`;
-  }
+      : `Só pode fazer upload de ${this.maxFiles} ficheiro(s).`);
 
-  /**
-   * This method displays the extensions that can be uploaded.
-   */
-  __acceptInfo () {
-    return `Pode fazer upload de ficheiros com a seguinte extensão: ${this.__humanReadableExtensions()}.`;
-  }
-
-  /**
-   * This method displays the maximum size for all the files that were uploaded.
-   */
-  __maxFileTotalSizeInfo () {
-    return this.maxFilesTotalSize === Infinity
+    // The total max size of all the files combined.
+    this.__addItemToUploadInfo(this.maxFilesTotalSize === Infinity
       ? 'Não existe limite para a soma total do tamanho dos ficheiros.'
-      : `A soma total dos ficheiros carregados não pode ultrapassar os ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`;
+      : `A soma total dos ficheiros carregados não pode ultrapassar os ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`);
+  }
+
+  /**
+   * This method appends a new line to the area that contains information about the types and sizes of files that can be uploaded.
+   *
+   * @param {String} message The message that will be appended.
+   */
+  __addItemToUploadInfo (message) {
+    const listItem = document.createElement('li');
+    listItem.innerHTML = message;
+
+    this.$['upload-info'].appendChild(listItem);
   }
 
   /**
