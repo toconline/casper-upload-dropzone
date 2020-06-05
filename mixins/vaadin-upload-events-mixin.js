@@ -46,7 +46,7 @@ export const VaadinUploadMixin = superClass => {
       } else if (uploadedFiles + file.size > this.maxFilesTotalSize) {
         // Check if the uploaded file surpasses the maximum total size.
         fileError = `O ficheiro "${file.name}" não foi carregado por ultrapassar o limite total de ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`;
-      } else if (this.noDuplicates && uploadedFiles.some(uploadedFile => uploadedFile.name === file.name && uploadedFile.size === file.size)) {
+      } else if (this.noDuplicates && uploadedFiles.some(uploadedFile => uploadedFile.name === file.name && uploadedFile.size === file.size && uploadedFile.type === file.type)) {
         // Check if the uploaded file is already in the list and the developer explicitly doesn't want that behavior.
         fileError = `Não pode carregar o ficheiro "${file.name}" novamente.`;
       }
