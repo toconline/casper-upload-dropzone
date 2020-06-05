@@ -163,6 +163,12 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
   static get template () {
     return html`
       <style>
+        :host {
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+
         vaadin-upload {
           width: 100%;
           height: 100%;
@@ -241,6 +247,16 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           width: 100%;
           @apply --casper-upload-dropzone-button;
         }
+
+        vaadin-upload .drop-label {
+          margin: 15px 0;
+          display: flex;
+          align-items: center;
+        }
+
+        vaadin-upload .drop-label casper-icon {
+          margin-right: 15px;
+        }
       </style>
 
       <vaadin-upload
@@ -271,6 +287,13 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           <casper-button disabled="[[disabled]]" on-click="__onAddFilesClick">
             [[addFileButtonText]]
           </casper-button>
+
+          <template is="dom-if" if="[[!disabled]]">
+            <div class="drop-label">
+              <casper-icon icon="fa-solid:upload"></casper-icon>
+              Arraste os ficheiros para aqui
+            </div>
+          </template>
         </div>
       </vaadin-upload>
     `;
