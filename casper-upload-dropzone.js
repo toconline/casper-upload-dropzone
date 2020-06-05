@@ -285,19 +285,20 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
   }
 
   /**
+   * This method clears all the files from the dropzone.
+   */
+  clearUploadedFiles () {
+    this.files = [];
+  }
+
+  /**
    * This method is invoked when the used clicks on the add files button.
    */
   __onAddFilesClick () {
     if (this.disabled) return;
 
+    this.$.upload.$.fileInput.value = '';
     this.$.upload.$.fileInput.click();
-  }
-
-  /**
-   * This method clears all the files from the dropzone.
-   */
-  clearUploadedFiles () {
-    this.files = [];
   }
 
   /**
