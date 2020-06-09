@@ -84,6 +84,15 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         notify: true
       },
       /**
+       * The property which specifies the form data name.
+       *
+       * @type {String}
+       */
+      formDataName: {
+        type: String,
+        value: 'my-attachment'
+      },
+      /**
        * The component's header icon.
        *
        * @type {String}
@@ -229,6 +238,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           @apply --casper-upload-dropzone-header-icon;
         }
 
+        vaadin-upload .container .header-icon,
         vaadin-upload .container .title-container,
         vaadin-upload .container .sub-title-container {
           text-align: center;
@@ -276,7 +286,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
       <vaadin-upload
         id="upload"
         class="casper-upload-dropzone"
-        form-data-name="my-attachment"
+
         files="{{__files}}"
         accept="[[accept]]"
         target="[[target]]"
@@ -284,13 +294,14 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         nodrop="[[disabled]]"
         max-files="[[maxFiles]]"
         max-file-size="[[maxFileSize]]"
-        max-files-reached="{{__maxFilesReached}}">
+        max-files-reached="{{__maxFilesReached}}"
+        form-data-name="[[formDataName]]">
         <div class="container">
           <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
 
           <!--Title and sub-title-->
-          <template is="dom-if" if="[[title]]"><div class="title-container">[[title]]</div></template>
-          <template is="dom-if" if="[[subTitle]]"><div class="sub-title-container">[[subTitle]]</div></template>
+          <template is="dom-if" if="[[title]]"><div class="title-container" inner-h-t-m-l="[[title]]"></div></template>
+          <template is="dom-if" if="[[subTitle]]"><div class="sub-title-container"inner-h-t-m-l="[[subTitle]]"></div></template>
 
           <casper-notice title="Informação">
             <ul id="upload-info">
