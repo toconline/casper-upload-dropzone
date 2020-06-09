@@ -6,6 +6,7 @@ import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-button/casper-button.js';
 import '@cloudware-casper/casper-notice/casper-notice.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 
 class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
@@ -134,6 +135,15 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
        * @type {Boolean}
        */
       noDuplicates: Boolean,
+      /**
+       * This flag hides the upload information.
+       *
+       * @type {Boolean}
+       */
+      noUploadInfo: {
+        type: Boolean,
+        value: false
+      },
       /**
        * The component's sub title.
        *
@@ -267,18 +277,18 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           padding: 0;
         }
 
-        vaadin-upload casper-button {
+        vaadin-upload .container casper-button {
           width: 100%;
           margin: 15px 0;
           @apply --casper-upload-dropzone-button;
         }
 
-        vaadin-upload .drop-label {
+        vaadin-upload .container .drop-label {
           display: flex;
           align-items: center;
         }
 
-        vaadin-upload .drop-label casper-icon {
+        vaadin-upload .container .drop-label casper-icon {
           margin-right: 15px;
         }
       </style>
@@ -286,7 +296,6 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
       <vaadin-upload
         id="upload"
         class="casper-upload-dropzone"
-
         files="{{__files}}"
         accept="[[accept]]"
         target="[[target]]"
@@ -303,14 +312,17 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           <template is="dom-if" if="[[title]]"><div class="title-container" inner-h-t-m-l="[[title]]"></div></template>
           <template is="dom-if" if="[[subTitle]]"><div class="sub-title-container"inner-h-t-m-l="[[subTitle]]"></div></template>
 
-          <casper-notice title="Informação">
-            <ul id="upload-info">
-              [[__displayUploadInfo(maxFiles, maxFileSize, maxFilesTotalSize, accept)]]
-            </ul>
-          </casper-notice>
+          <!--Upload information-->
+          <template is="dom-if" if="[[!noUploadInfo]]">
+            <casper-notice title="Informação">
+              <ul id="upload-info">
+                [[__displayUploadInfo(maxFiles, maxFileSize, maxFilesTotalSize, accept)]]
+              </ul>
+            </casper-notice>
+          </template>
 
           <casper-button disabled="[[disabled]]" on-click="__onAddFilesClick">
-            [[addFileButtonText]]
+            [[__addFileButtonText(maxFiles, addFileButtonText)]]
           </casper-button>
 
           <template is="dom-if" if="[[!disabled]]">
@@ -351,6 +363,14 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
     this.__files = [];
   }
 
+  __addFileButtonText () {
+    if (this.addFileButtonText) return this.addFileButtonText;
+
+    return this.maxFiles === 1
+      ? 'Carregar ficheiro'
+      : 'Carregar ficheiros';
+  }
+
   /**
    * This method is invoked when the used clicks on the add files button.
    */
@@ -380,25 +400,30 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
    * maximum number of files.
    */
   __displayUploadInfo () {
-    this.$['upload-info'].innerHTML = '';
+    if (this.noUploadInfo) return;
 
-    // Maximum size per-file.
-    if (this.maxFileSize !== Infinity) {
-      this.__addItemToUploadInfo(`Cada ficheiro tem que ter no máximo um tamanho de ${this.__bytesToMegabytes(this.maxFileSize)}MB.`);
-    }
+    afterNextRender(this, () => {
+      this.__uploadInfoContainer = this.shadowRoot.querySelector('#upload-info');
+      this.__uploadInfoContainer.innerHTML = '';
 
-    // The accepted extensions.
-    this.__addItemToUploadInfo(`Pode fazer upload de ficheiros com a seguinte extensão: ${this.__humanReadableExtensions()}.`);
+      // Maximum size per-file.
+      if (this.maxFileSize !== Infinity) {
+        this.__addItemToUploadInfo(`Cada ficheiro tem que ter no máximo um tamanho de ${this.__bytesToMegabytes(this.maxFileSize)}MB.`);
+      }
 
-    // The maximum number of files.
-    this.__addItemToUploadInfo(this.maxFiles === Infinity
-      ? 'Não existe limite para o número de ficheiros.'
-      : `Só pode fazer upload de ${this.maxFiles} ficheiro(s).`);
+      // The total max size of all the files combined.
+      if (this.maxFilesTotalSize !== Infinity) {
+        this.__addItemToUploadInfo(`A soma total dos ficheiros carregados não pode ultrapassar os ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`);
+      }
 
-    // The total max size of all the files combined.
-    this.__addItemToUploadInfo(this.maxFilesTotalSize === Infinity
-      ? 'Não existe limite para a soma total do tamanho dos ficheiros.'
-      : `A soma total dos ficheiros carregados não pode ultrapassar os ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`);
+      // The accepted extensions.
+      this.__addItemToUploadInfo(`Pode fazer upload de ficheiros com a seguinte extensão: ${this.__humanReadableExtensions()}.`);
+
+      // The maximum number of files.
+      this.__addItemToUploadInfo(this.maxFiles === Infinity
+        ? 'Não existe limite para o número de ficheiros.'
+        : `Só pode fazer upload de ${this.maxFiles} ficheiro(s).`);
+      });
   }
 
   /**
@@ -410,7 +435,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
     const listItem = document.createElement('li');
     listItem.innerHTML = message;
 
-    this.$['upload-info'].appendChild(listItem);
+    this.__uploadInfoContainer.appendChild(listItem);
   }
 
   /**
