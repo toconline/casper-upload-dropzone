@@ -66,6 +66,15 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
        */
       disabled: Boolean,
       /**
+       * The text indicating the user can drag the files into the dropzone.
+       *
+       * @type {String}
+       */
+      dragFileText: {
+        type: String,
+        value: 'Arraste os ficheiros para aqui'
+      },
+      /**
        * The list of files that are in the upload component.
        *
        * @type {Array}
@@ -165,15 +174,20 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
     return html`
       <style>
         :host {
-          display: block;
           width: 100%;
           height: 100%;
+          display: block;
+        }
+
+        .spacer {
+          flex-shrink: 0;
+          flex-basis: 25px;
         }
 
         vaadin-upload {
           width: 100%;
           height: 100%;
-          padding: 0 25px;
+          padding: 0 25px 25px;
           display: flex;
           overflow-y: auto;
           overflow-x: hidden;
@@ -291,10 +305,13 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           <template is="dom-if" if="[[!disabled]]">
             <div class="drop-label">
               <casper-icon icon="fa-solid:upload"></casper-icon>
-              Arraste os ficheiros para aqui
+              [[dragFileText]]
             </div>
           </template>
         </div>
+
+        <!--This element is needed since the padding top is not respected in a column-reverse flow-->
+        <div class="spacer"></div>
       </vaadin-upload>
     `;
   }
