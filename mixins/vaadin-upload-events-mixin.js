@@ -75,6 +75,7 @@ export const VaadinUploadMixin = superClass => {
           bubbles: true,
           composed: true,
           detail: {
+            originalFileSize: file.size,
             originalFileName: file.name,
             originalFileType: file.type,
             uploadedFile: JSON.parse(xhr.response).file,

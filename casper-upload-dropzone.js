@@ -98,7 +98,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
        *
        * @type {String}
        */
-      headerIcon: {
+      icon: {
         type: String,
         value: 'fa-light:cloud-upload'
       },
@@ -317,7 +317,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         <div class="container">
           <!--Header icon-->
           <template is="dom-if" if="[[!minimalist]]">
-            <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
+            <casper-icon class="header-icon" icon="[[icon]]"></casper-icon>
 
             <!--Title and sub-title-->
             <template is="dom-if" if="[[title]]"><div class="title-container" inner-h-t-m-l="[[title]]"></div></template>
