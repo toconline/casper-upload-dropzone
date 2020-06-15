@@ -130,29 +130,21 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         value: Infinity
       },
       /**
+       * This flag if set to true only shows the button and drop label.
+       *
+       * @type {Boolean}
+       */
+      minimalist: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+      /**
        * This flag prevents the user of uploading the same file twice.
        *
        * @type {Boolean}
        */
       noDuplicates: Boolean,
-      /**
-       * This flag hides the header's icon.
-       *
-       * @type {Boolean}
-       */
-      noHeaderIcon: {
-        type: Boolean,
-        value: false
-      },
-      /**
-       * This flag hides the upload information.
-       *
-       * @type {Boolean}
-       */
-      noUploadInfo: {
-        type: Boolean,
-        value: false
-      },
       /**
        * The component's sub title.
        *
@@ -210,7 +202,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         vaadin-upload {
           width: 100%;
           height: 100%;
-          padding: 25px;
+          padding: 15px;
           display: flex;
           overflow-y: auto;
           overflow-x: hidden;
@@ -239,10 +231,13 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
         vaadin-upload .container {
           display: flex;
-          margin-bottom: 15px;
           align-items: center;
           flex-direction: column;
           @apply --casper-upload-dropzone-container;
+        }
+
+        :host([minimalist]) vaadin-upload .container {
+          flex-direction: row;
         }
 
         vaadin-upload .container .header-icon {
@@ -284,13 +279,22 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
         vaadin-upload .container casper-button {
           width: 100%;
-          margin-bottom: 15px;
+          margin: 0 0 15px 0;
           @apply --casper-upload-dropzone-button;
+        }
+
+        :host([minimalist]) vaadin-upload .container casper-button {
+          flex: 1;
+          margin: 0;
         }
 
         vaadin-upload .container .drop-label {
           display: flex;
           align-items: center;
+        }
+
+        :host([minimalist]) vaadin-upload .container .drop-label {
+          margin-left: 15px;
         }
 
         vaadin-upload .container .drop-label casper-icon {
@@ -312,20 +316,16 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         form-data-name="[[formDataName]]">
         <div class="container">
           <!--Header icon-->
-          <template is="dom-if" if="[[!noHeaderIcon]]">
+          <template is="dom-if" if="[[!minimalist]]">
             <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
-          </template>
 
-          <!--Title and sub-title-->
-          <template is="dom-if" if="[[title]]"><div class="title-container" inner-h-t-m-l="[[title]]"></div></template>
-          <template is="dom-if" if="[[subTitle]]"><div class="sub-title-container"inner-h-t-m-l="[[subTitle]]"></div></template>
+            <!--Title and sub-title-->
+            <template is="dom-if" if="[[title]]"><div class="title-container" inner-h-t-m-l="[[title]]"></div></template>
+            <template is="dom-if" if="[[subTitle]]"><div class="sub-title-container"inner-h-t-m-l="[[subTitle]]"></div></template>
 
-          <!--Upload information-->
-          <template is="dom-if" if="[[!noUploadInfo]]">
+            <!--Upload information-->
             <casper-notice title="Informação">
-              <ul id="upload-info">
-                [[__displayUploadInfo(maxFiles, maxFileSize, maxFilesTotalSize, accept)]]
-              </ul>
+              <ul>[[__displayUploadInfo(maxFiles, maxFileSize, maxFilesTotalSize, accept)]]</ul>
             </casper-notice>
           </template>
 
@@ -413,10 +413,8 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
    * maximum number of files.
    */
   __displayUploadInfo () {
-    if (this.noUploadInfo) return;
-
     afterNextRender(this, () => {
-      this.__uploadInfoContainer = this.shadowRoot.querySelector('#upload-info');
+      this.__uploadInfoContainer = this.shadowRoot.querySelector('ul');
       this.__uploadInfoContainer.innerHTML = '';
 
       // Maximum size per-file.
