@@ -136,6 +136,15 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
        */
       noDuplicates: Boolean,
       /**
+       * This flag hides the header's icon.
+       *
+       * @type {Boolean}
+       */
+      noHeaderIcon: {
+        type: Boolean,
+        value: false
+      },
+      /**
        * This flag hides the upload information.
        *
        * @type {Boolean}
@@ -198,20 +207,15 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           display: block;
         }
 
-        .spacer {
-          flex-shrink: 0;
-          flex-basis: 25px;
-        }
-
         vaadin-upload {
           width: 100%;
           height: 100%;
-          padding: 0 25px 25px;
+          padding: 25px;
           display: flex;
           overflow-y: auto;
           overflow-x: hidden;
           box-sizing: border-box;
-          flex-direction: column-reverse;
+          flex-direction: column;
           justify-content: space-between;
           @apply --casper-upload-dropzone-vaadin-upload;
         }
@@ -306,7 +310,10 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         max-files-reached="{{__maxFilesReached}}"
         form-data-name="[[formDataName]]">
         <div class="container">
-          <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
+          <!--Header icon-->
+          <template is="dom-if" if="[[!noHeaderIcon]]">
+            <casper-icon class="header-icon" icon="[[headerIcon]]"></casper-icon>
+          </template>
 
           <!--Title and sub-title-->
           <template is="dom-if" if="[[title]]"><div class="title-container" inner-h-t-m-l="[[title]]"></div></template>
@@ -332,9 +339,6 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
             </div>
           </template>
         </div>
-
-        <!--This element is needed since the padding top is not respected in a column-reverse flow-->
-        <div class="spacer"></div>
       </vaadin-upload>
     `;
   }
@@ -354,6 +358,14 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
     this.$.upload.addEventListener('upload-before', event => this.__onUploadBefore(event));
     this.$.upload.addEventListener('upload-request', event => this.__onUploadRequest(event));
     this.$.upload.addEventListener('upload-success', event => this.__onUploadSuccess(event));
+
+    // This makes sure the files will appear after the icon, title and sub-title.
+    afterNextRender(this, () => {
+      const defaultSlot = this.$.upload.shadowRoot.querySelector('slot:not([name])');
+      const fileListSlot = this.$.upload.shadowRoot.querySelector('slot[name="file-list"]');
+
+      this.$.upload.shadowRoot.insertBefore(defaultSlot, fileListSlot);
+    });
   }
 
   /**
@@ -423,7 +435,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
       this.__addItemToUploadInfo(this.maxFiles === Infinity
         ? 'Não existe limite para o número de ficheiros.'
         : `Só pode fazer upload de ${this.maxFiles} ficheiro(s).`);
-      });
+    });
   }
 
   /**

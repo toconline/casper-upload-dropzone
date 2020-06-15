@@ -43,7 +43,7 @@ export const VaadinUploadMixin = superClass => {
       if (this.beforeUploadValidator && (error = this.beforeUploadValidator(file))) {
         // Check if the file passes the custom validator implemented by the developer.
         fileError = error;
-      } else if (uploadedFiles + file.size > this.maxFilesTotalSize) {
+      } else if (uploadedFilesSize + file.size > this.maxFilesTotalSize) {
         // Check if the uploaded file surpasses the maximum total size.
         fileError = `O ficheiro "${file.name}" não foi carregado por ultrapassar o limite total de ${this.__bytesToMegabytes(this.maxFilesTotalSize)}MB.`;
       } else if (this.noDuplicates && uploadedFiles.some(uploadedFile => uploadedFile.name === file.name && uploadedFile.size === file.size && uploadedFile.type === file.type)) {
