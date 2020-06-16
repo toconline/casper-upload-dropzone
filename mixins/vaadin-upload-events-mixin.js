@@ -82,6 +82,8 @@ export const VaadinUploadMixin = superClass => {
             [this.additionalParamsKey]: xhr[this.additionalParamsKey]
           }
         }));
+      } else {
+        this.dispatchEvent(new CustomEvent('on-upload-error', { bubbles: true, composed: true }));
       }
     }
 
@@ -93,7 +95,9 @@ export const VaadinUploadMixin = superClass => {
     __onUploadRequest (event) {
       event.preventDefault();
 
-      if (this.additionalParams) event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
+      if (this.additionalParams) {
+        event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
+      }
 
       event.detail.xhr.setRequestHeader('Content-Type', 'application/octet-stream');
       event.detail.xhr.setRequestHeader('Content-Disposition', `form-data; name="${this.formDataName}"; filename="uploaded_file";`);

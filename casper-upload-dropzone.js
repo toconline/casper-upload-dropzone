@@ -65,7 +65,10 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
        *
        * @type {Boolean}
        */
-      disabled: Boolean,
+      disabled: {
+        type: Boolean,
+        observer: '__updateDisabledState'
+      },
       /**
        * The text indicating the user can drag the files into the dropzone.
        *
@@ -185,7 +188,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
        */
       __maxFilesReached: {
         type: Boolean,
-        observer: '__maxFilesReachedChanged'
+        observer: '__updateDisabledState'
       }
     };
   }
@@ -309,7 +312,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         accept="[[accept]]"
         target="[[target]]"
         timeout="[[timeout]]"
-        nodrop="[[disabled]]"
+        nodrop="[[__disabled]]"
         max-files="[[maxFiles]]"
         max-file-size="[[maxFileSize]]"
         max-files-reached="{{__maxFilesReached}}"
@@ -329,7 +332,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
             </casper-notice>
           </template>
 
-          <casper-button disabled="[[disabled]]" on-click="__onAddFilesClick">
+          <casper-button disabled="[[__disabled]]" on-click="__onAddFilesClick">
             [[__addFileButtonText(maxFiles, addFileButtonText)]]
           </casper-button>
 
@@ -388,7 +391,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
    * This method is invoked when the used clicks on the add files button.
    */
   __onAddFilesClick () {
-    if (this.disabled) return;
+    if (this.__disabled) return;
 
     this.$.upload.$.fileInput.value = '';
     this.$.upload.$.fileInput.click();
@@ -397,8 +400,8 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
   /**
    * This method is invoked when the maximum number of files is reached.
    */
-  __maxFilesReachedChanged () {
-    this.disabled = this.__maxFilesReached;
+  __updateDisabledState () {
+    this.__disabled = this.disabled || this.__maxFilesReached;
   }
 
   /**
@@ -455,6 +458,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
   __humanReadableExtensions () {
     const mimeTypesExtensions = {
       'application/pdf': '.pdf',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
       'application/xml': '.xml',
       'image/jpeg': '.jpg / .jpeg',
       'image/png': '.png',
