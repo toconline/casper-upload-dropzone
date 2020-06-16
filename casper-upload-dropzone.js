@@ -1,5 +1,4 @@
 import { VaadinUploadMixin } from './mixins/vaadin-upload-events-mixin.js';
-import { CasperUploadDropzoneErrors } from './casper-upload-dropzone-constants.js';
 
 import '@vaadin/vaadin-upload/vaadin-upload.js';
 import '@cloudware-casper/casper-icons/casper-icon.js';
