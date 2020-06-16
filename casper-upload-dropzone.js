@@ -335,7 +335,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
             [[__addFileButtonText(maxFiles, addFileButtonText)]]
           </casper-button>
 
-          <template is="dom-if" if="[[!disabled]]">
+          <template is="dom-if" if="[[!__disabled]]">
             <div class="drop-label">
               <casper-icon icon="fa-solid:upload"></casper-icon>
               [[dragFileText]]
