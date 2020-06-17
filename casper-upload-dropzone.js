@@ -296,6 +296,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         }
 
         :host([minimalist]) vaadin-upload .container .drop-label {
+          flex: 1;
           margin-left: 15px;
         }
 
