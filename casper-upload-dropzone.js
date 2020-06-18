@@ -206,8 +206,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           height: 100%;
           padding: 15px;
           display: flex;
-          overflow-y: auto;
-          overflow-x: hidden;
+          overflow: auto;
           box-sizing: border-box;
           flex-direction: column;
           justify-content: space-between;
@@ -245,26 +244,24 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         vaadin-upload .container .header-icon {
           width: 100px;
           height: 100px;
+          margin-bottom: 15px;
           color: var(--primary-color);
           @apply --casper-upload-dropzone-header-icon;
         }
 
-        vaadin-upload .container .header-icon,
-        vaadin-upload .container .title-container,
-        vaadin-upload .container .sub-title-container {
+        vaadin-upload .container .title-container {
+          font-size: 18px;
+          font-weight: bold;
           text-align: center;
           margin-bottom: 15px;
-        }
-
-        vaadin-upload .container .title-container {
-          font-size: 20px;
-          font-weight: bold;
           color: var(--primary-color);
           @apply --casper-upload-dropzone-title;
         }
 
         vaadin-upload .container .sub-title-container {
           color: darkgray;
+          text-align: center;
+          margin-bottom: 15px;
           @apply --casper-upload-dropzone-sub-title;
         }
 
@@ -274,9 +271,10 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           @apply --casper-upload-dropzone-notice;
         }
 
-        vaadin-upload .container casper-notice * {
+        vaadin-upload .container casper-notice ul {
           margin: 0;
-          padding: 0;
+          padding-left: 20px;
+          @apply --casper-upload-dropzone-notice-list;
         }
 
         vaadin-upload .container casper-button {
@@ -292,11 +290,9 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
 
         vaadin-upload .container .drop-label {
           display: flex;
+          color: darkgray;
           align-items: center;
-        }
-
-        vaadin-upload .container .drop-label[disabled] {
-          color: var(--disabled-text-color);
+          @apply --casper-upload-dropzone-drop-label;
         }
 
         :host([minimalist]) vaadin-upload .container .drop-label {
