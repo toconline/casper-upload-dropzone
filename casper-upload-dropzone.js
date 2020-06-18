@@ -295,6 +295,10 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
           align-items: center;
         }
 
+        vaadin-upload .container .drop-label[disabled] {
+          color: var(--disabled-text-color);
+        }
+
         :host([minimalist]) vaadin-upload .container .drop-label {
           flex: 1;
           margin-left: 15px;
@@ -318,8 +322,8 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
         max-files-reached="{{__maxFilesReached}}"
         form-data-name="[[formDataName]]">
         <div class="container">
-          <!--Header icon-->
           <template is="dom-if" if="[[!minimalist]]">
+            <!--Header icon-->
             <casper-icon class="header-icon" icon="[[icon]]"></casper-icon>
 
             <!--Title and sub-title-->
@@ -336,12 +340,10 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
             [[__addFileButtonText(maxFiles, addFileButtonText)]]
           </casper-button>
 
-          <template is="dom-if" if="[[!__disabled]]">
-            <div class="drop-label">
-              <casper-icon icon="fa-solid:upload"></casper-icon>
-              [[dragFileText]]
-            </div>
-          </template>
+          <div class="drop-label" disabled$="[[__disabled]]">
+            <casper-icon icon="fa-solid:upload"></casper-icon>
+            [[dragFileText]]
+          </div>
         </div>
       </vaadin-upload>
     `;
@@ -379,6 +381,9 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
     this.__files = [];
   }
 
+  /**
+   * This method returns the text that will appear in the add file button.
+   */
   __addFileButtonText () {
     if (this.addFileButtonText) return this.addFileButtonText;
 
