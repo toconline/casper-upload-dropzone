@@ -102,11 +102,7 @@ export const VaadinUploadMixin = superClass => {
 
       // This means the user has to buy more digital archive space.
       if (xhr.status === 413) {
-        this.__files = this.__files.filter(existingFile =>
-          existingFile.type !== file.type &&
-          existingFile.size !== file.size &&
-          existingFile.name !== file.name
-        );
+        this.__files = this.__files.filter(existingFile => existingFile !== file);
 
         this.__errors.push(this.__noSpaceErrorMessage);
         this.__displayErrors();
