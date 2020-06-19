@@ -75,37 +75,44 @@ export const VaadinUploadMixin = superClass => {
 
       const { xhr, file } = event.detail;
 
-      this.dispatchEvent(new CustomEvent('on-upload-success', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          originalFileSize: file.size,
-          originalFileName: file.name,
-          originalFileType: file.type,
-          uploadedFile: JSON.parse(xhr.response).file,
-          [this.additionalParamsKey]: xhr[this.additionalParamsKey]
-        }
-      }));
+      this.__dispatchEvent('on-upload-success', {
+        originalFileSize: file.size,
+        originalFileName: file.name,
+        originalFileType: file.type,
+        uploadedFile: JSON.parse(xhr.response).file,
+        [this.additionalParamsKey]: xhr[this.additionalParamsKey]
+      });
     }
 
     /**
      * This method is called when the request is errors out.
+     *
+     * @param {Object} event The event's object.
      */
-    __onUploadError () {
+    __onUploadError (event) {
       this.__updateUploadingState();
 
-      this.dispatchEvent(new CustomEvent('on-upload-error', {
-        bubbles: true,
-        composed: true
-      }));
+      this.__dispatchEvent('on-upload-error', {
+        originalFileSize: event.detail.file.size,
+        originalFileName: event.detail.file.name,
+        originalFileType: event.detail.file.type
+      });
     }
 
     /**
      * This method is called when the request is errors out.
+     *
+     * @param {Object} event The event's object.
      */
-    __onUploadAbort () {
+    __onUploadAbort (event) {
       // Wait for the vaadin-upload component to actually remove the aborted file.
       afterNextRender(this, () => this.__updateUploadingState());
+
+      this.__dispatchEvent('on-upload-abort', {
+        originalFileSize: event.detail.file.size,
+        originalFileName: event.detail.file.name,
+        originalFileType: event.detail.file.type
+      });
     }
 
     /**
@@ -160,20 +167,6 @@ export const VaadinUploadMixin = superClass => {
           }
         }
       };
-    }
-
-    /**
-     * This method checks the currently existing files to see if one is being currently uploaded or not.
-     */
-    __updateUploadingState () {
-      this.uploading = this.__files.some(file => !file.error && !file.complete);
-    }
-
-    /**
-     * This method makes sure the uploadedFiles property is up-to-date.
-     */
-    __updateUploadedFilesState () {
-      this.uploadedFiles = this.__files.filter(file => !file.error && file.complete);
     }
   }
 }
