@@ -92,11 +92,25 @@ export const VaadinUploadMixin = superClass => {
     __onUploadError (event) {
       this.__updateUploadingState();
 
+      const { file, xhr } = event.detail;
+
       this.__dispatchEvent('on-upload-error', {
-        originalFileSize: event.detail.file.size,
-        originalFileName: event.detail.file.name,
-        originalFileType: event.detail.file.type
+        originalFileSize: file.size,
+        originalFileName: file.name,
+        originalFileType: file.type
       });
+
+      // This means the user has to buy more digital archive space.
+      if (xhr.status === 413) {
+        this.__files = this.__files.filter(existingFile =>
+          existingFile.type !== file.type &&
+          existingFile.size !== file.size &&
+          existingFile.name !== file.name
+        );
+
+        this.__errors.push(this.__noSpaceErrorMessage);
+        this.__displayErrors();
+      }
     }
 
     /**

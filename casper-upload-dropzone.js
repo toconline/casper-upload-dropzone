@@ -209,6 +209,15 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
       __maxFilesReached: {
         type: Boolean,
         observer: '__updateDisabledState'
+      },
+      /**
+       * The error message that will be used when the user can't upload more files due to reaching its digital archive space.
+       *
+       * @type {String}
+       */
+      __noSpaceErrorMessage: {
+        type: String,
+        value: 'Não dispõe de espaço para arquivar novos ficheiros. Por favor fale com o responsável da empresa.'
       }
     };
   }
