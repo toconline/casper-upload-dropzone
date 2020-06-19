@@ -1,5 +1,7 @@
 import { CasperUploadDropzoneErrors } from '../casper-upload-dropzone-constants.js';
 
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
+
 export const VaadinUploadMixin = superClass => {
   return class extends superClass {
     /**
@@ -68,23 +70,42 @@ export const VaadinUploadMixin = superClass => {
      * @param {Object} event The event's object.
      */
     __onUploadSuccess (event) {
+      this.__updateUploadingState();
+      this.__updateUploadedFilesState();
+
       const { xhr, file } = event.detail;
 
-      if (xhr.status === 200) {
-        this.dispatchEvent(new CustomEvent('on-upload-success', {
-          bubbles: true,
-          composed: true,
-          detail: {
-            originalFileSize: file.size,
-            originalFileName: file.name,
-            originalFileType: file.type,
-            uploadedFile: JSON.parse(xhr.response).file,
-            [this.additionalParamsKey]: xhr[this.additionalParamsKey]
-          }
-        }));
-      } else {
-        this.dispatchEvent(new CustomEvent('on-upload-error', { bubbles: true, composed: true }));
-      }
+      this.dispatchEvent(new CustomEvent('on-upload-success', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          originalFileSize: file.size,
+          originalFileName: file.name,
+          originalFileType: file.type,
+          uploadedFile: JSON.parse(xhr.response).file,
+          [this.additionalParamsKey]: xhr[this.additionalParamsKey]
+        }
+      }));
+    }
+
+    /**
+     * This method is called when the request is errors out.
+     */
+    __onUploadError () {
+      this.__updateUploadingState();
+
+      this.dispatchEvent(new CustomEvent('on-upload-error', {
+        bubbles: true,
+        composed: true
+      }));
+    }
+
+    /**
+     * This method is called when the request is errors out.
+     */
+    __onUploadAbort () {
+      // Wait for the vaadin-upload component to actually remove the aborted file.
+      afterNextRender(this, () => this.__updateUploadingState());
     }
 
     /**
@@ -94,6 +115,8 @@ export const VaadinUploadMixin = superClass => {
      */
     __onUploadRequest (event) {
       event.preventDefault();
+
+      this.__updateUploadingState();
 
       if (this.additionalParams) {
         event.detail.xhr[this.additionalParamsKey] = this.additionalParams;
@@ -137,6 +160,20 @@ export const VaadinUploadMixin = superClass => {
           }
         }
       };
+    }
+
+    /**
+     * This method checks the currently existing files to see if one is being currently uploaded or not.
+     */
+    __updateUploadingState () {
+      this.uploading = this.__files.some(file => !file.error && !file.complete);
+    }
+
+    /**
+     * This method makes sure the uploadedFiles property is up-to-date.
+     */
+    __updateUploadedFilesState () {
+      this.uploadedFiles = this.__files.filter(file => !file.error && file.complete);
     }
   }
 }

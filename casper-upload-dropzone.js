@@ -172,6 +172,26 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
        */
       title: String,
       /**
+       * This property contains the current list of files that were successfully uploaded.
+       *
+       * @type {Array}
+       */
+      uploadedFiles: {
+        type: Array,
+        value: () => [],
+        notify: true
+      },
+      /**
+       * This flag states if the component is currently uploading any file.
+       *
+       * @type {Boolean}
+       */
+      uploading: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+      /**
        * The list of errors that will eventually be displayed.
        *
        * @type {Array}
@@ -357,6 +377,8 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
     this.__setupUploadTranslations();
 
     this.$.upload.addEventListener('file-reject', event => this.__onFileReject(event));
+    this.$.upload.addEventListener('upload-error', () => this.__onUploadError());
+    this.$.upload.addEventListener('upload-abort', () => this.__onUploadAbort());
     this.$.upload.addEventListener('upload-before', event => this.__onUploadBefore(event));
     this.$.upload.addEventListener('upload-request', event => this.__onUploadRequest(event));
     this.$.upload.addEventListener('upload-success', event => this.__onUploadSuccess(event));
@@ -410,6 +432,7 @@ class CasperUploadDropzone extends VaadinUploadMixin(PolymerElement) {
    */
   __filesChanged () {
     this.files = [...this.__files];
+    this.__updateUploadedFilesState();
   }
 
   /**
