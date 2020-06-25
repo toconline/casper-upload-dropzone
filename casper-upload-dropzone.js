@@ -46,15 +46,6 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
         value: 'additionalParams'
       },
       /**
-       * The app's global object.
-       *
-       * @type {Object}
-       */
-      app: {
-        type: Object,
-        value: () => { return window.app; }
-      },
-      /**
        * Function that will be invoked before uploading a file to allow some extra validations.
        *
        * @type {Function}
@@ -121,7 +112,8 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
        */
       maxFileSize: {
         type: Number,
-        value: Infinity
+        value: () => { return window.app.uploadMaxFileSize; },
+        observer: '__maxFileSizeChanged'
       },
       /**
        * Specifies the maximum size of all the files combined.
@@ -159,7 +151,10 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
        *
        * @type {String}
        */
-      target: String,
+      target: {
+        type: String,
+        value: () => { return window.app.uploadUrl; }
+      },
       /**
        * Maximum time in milliseconds to upload the file.
        *
@@ -443,6 +438,16 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
   __filesChanged () {
     this.files = [...this.__files];
     this.__updateUploadedFilesState();
+  }
+
+  /**
+   * This method is invoked when the max file size changes and checks if the new value surpasses the server's hard limit.
+   */
+  __maxFileSizeChanged () {
+    if (this.maxFileSize > window.app.uploadMaxFileSize) {
+      this.maxFileSize = window.app.uploadMaxFileSize;
+      console.warn('The maximum individual file size cannot be greater than the server\'s hard limit.');
+    }
   }
 
   /**

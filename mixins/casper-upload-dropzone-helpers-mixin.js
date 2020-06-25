@@ -54,7 +54,7 @@ export const CasperUploadDropzoneHelpersMixin = superClass => {
         this.__uploadInfoContainer.innerHTML = '';
 
         // Maximum size per-file.
-        if (this.maxFileSize !== Infinity) {
+        if (this.maxFileSize) {
           this.__addItemToUploadInfo(`Cada ficheiro tem que ter no máximo um tamanho de ${this.__bytesToMegabytes(this.maxFileSize)}MB.`);
         }
 
