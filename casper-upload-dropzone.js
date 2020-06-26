@@ -255,15 +255,15 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
           border-color: var(--primary-color);
         }
 
+        :host([minimalist]) vaadin-upload {
+          justify-content: center;
+        }
+
         vaadin-upload .container {
           display: flex;
           align-items: center;
           flex-direction: column;
           @apply --casper-upload-dropzone-container;
-        }
-
-        :host([minimalist]) vaadin-upload .container {
-          flex-direction: row;
         }
 
         vaadin-upload .container .header-icon {
@@ -309,8 +309,7 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
         }
 
         :host([minimalist]) vaadin-upload .container casper-button {
-          flex: 1;
-          margin: 0;
+          width: 75%;
         }
 
         vaadin-upload .container .drop-label {
@@ -318,11 +317,6 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
           color: darkgray;
           align-items: center;
           @apply --casper-upload-dropzone-drop-label;
-        }
-
-        :host([minimalist]) vaadin-upload .container .drop-label {
-          flex: 1;
-          margin-left: 15px;
         }
 
         vaadin-upload .container .drop-label casper-icon {
@@ -436,6 +430,12 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
    * This method is invoked when the list of files changes.
    */
   __filesChanged () {
+    this.__fileListContainer = this.$.upload.shadowRoot.querySelector('slot[name="file-list"]').firstElementChild;
+
+    this.__files.length > 0
+      ? this.__fileListContainer.style.display = ''
+      : this.__fileListContainer.style.display = 'none';
+
     this.files = [...this.__files];
     this.__updateUploadedFilesState();
   }
