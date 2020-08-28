@@ -33,7 +33,7 @@ export const CasperUploadDropzoneHelpersMixin = superClass => {
 
       this.__displayErrorsTimeout = setTimeout(() => {
         // Open the application's toast displaying why certain files were rejected.
-        this.app.openToast({
+        window.app.openToast({
           duration: 10000,
           text: this.__errors.join('<br />'),
           backgroundColor: 'var(--status-red)',
