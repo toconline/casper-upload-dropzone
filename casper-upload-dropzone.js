@@ -13,6 +13,16 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
   static get properties () {
     return {
       /**
+       * Since the page load process will change there might be sometimes where this property is not
+       * defined so we initialize it this way to ensure that nothing breaks.
+       *
+       * @type {Object}
+       */
+      app: {
+        type: Object,
+        value: window.app
+      },
+      /**
        * Specifies which type of files can be uploaded.
        *
        * @type {String}
