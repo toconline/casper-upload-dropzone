@@ -1,6 +1,6 @@
 {
   "name": "@cloudware-casper/casper-upload-dropzone",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "license": "MIT",
   "dependencies": {
     "@cloudware-casper/casper-button": "^1.x",
