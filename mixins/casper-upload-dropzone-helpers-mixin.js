@@ -92,6 +92,7 @@ export const CasperUploadDropzoneHelpersMixin = superClass => {
       const mimeTypesExtensions = {
         'application/pdf': '.pdf',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+        'application/vnd.ms-excel': '.xls',
         'application/xml': '.xml',
         'image/jpeg': '.jpg / .jpeg',
         'image/png': '.png',
