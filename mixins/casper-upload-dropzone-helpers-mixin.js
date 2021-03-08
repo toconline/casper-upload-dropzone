@@ -99,6 +99,7 @@ export const CasperUploadDropzoneHelpersMixin = superClass => {
         'text/html': '.html',
         'text/plain': '.txt',
         'text/xml': '.xml',
+        'text/csv' : '.csv',
       };
 
       return this.accept
