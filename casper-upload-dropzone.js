@@ -135,6 +135,16 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
         reflectToAttribute: true,
       },
       /**
+       * This flag if set to true only shows the button
+       *
+       * @type {Boolean}
+       */
+       onlybutton: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+      /**
        * This flag prevents the user of uploading the same file twice.
        *
        * @type {Boolean}
@@ -226,6 +236,11 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
           display: block;
         }
 
+        :host([onlybutton]) {
+          height: auto;
+          width: auto;
+        }
+
         vaadin-upload {
           width: 100%;
           height: 100%;
@@ -244,6 +259,11 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
 
         vaadin-upload:not([nodrop]) {
           border: 2px dashed var(--primary-color);
+        }
+
+        vaadin-upload[onlybutton] {
+          border: none;
+          padding: 0;
         }
 
         vaadin-upload[dragover] {
@@ -308,8 +328,17 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
           @apply --casper-upload-dropzone-button;
         }
 
+        vaadin-upload[onlybutton] .container casper-button {
+          margin: 0;
+          padding: 0;
+        }
+
         :host([minimalist]) vaadin-upload .container casper-button {
           width: 75%;
+        }
+
+        :host([onlybutton]) vaadin-upload .container casper-button {
+          width: auto;
         }
 
         vaadin-upload .container .drop-label {
@@ -332,6 +361,7 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
         target="[[target]]"
         timeout="[[timeout]]"
         nodrop="[[__disabled]]"
+        onlybutton$="[[onlybutton]]"
         max-files="[[maxFiles]]"
         max-file-size="[[maxFileSize]]"
         max-files-reached="{{__maxFilesReached}}"
@@ -355,10 +385,13 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
             [[__addFileButtonText(maxFiles, addFileButtonText)]]
           </casper-button>
 
-          <div class="drop-label" disabled$="[[__disabled]]">
-            <casper-icon icon="fa-solid:upload"></casper-icon>
-            [[dragFileText]]
-          </div>
+
+          <template is="dom-if" if="[[!onlybutton]]">
+            <div class="drop-label" disabled$="[[__disabled]]">
+              <casper-icon icon="fa-solid:upload"></casper-icon>
+              [[dragFileText]]
+            </div>
+          </template>
         </div>
       </vaadin-upload>
     `;
@@ -387,7 +420,7 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
       const defaultSlot = this.$.upload.shadowRoot.querySelector('slot:not([name])');
       const fileListSlot = this.$.upload.shadowRoot.querySelector('slot[name="file-list"]');
 
-      this.$.upload.shadowRoot.insertBefore(defaultSlot, fileListSlot);
+      this.onlybutton ?? this.$.upload.shadowRoot.insertBefore(defaultSlot, fileListSlot);
     });
   }
 
@@ -432,7 +465,7 @@ class CasperUploadDropzone extends CasperUploadDropzoneHelpersMixin(VaadinUpload
   __filesChanged () {
     this.__fileListContainer = this.$.upload.shadowRoot.querySelector('slot[name="file-list"]').firstElementChild;
 
-    this.__files.length > 0
+    this.__files.length > 0 & !this.onlybutton
       ? this.__fileListContainer.style.display = ''
       : this.__fileListContainer.style.display = 'none';
 
