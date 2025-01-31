@@ -19,9 +19,9 @@ import { VaadinUploadMixin } from './mixins/vaadin-upload-events-mixin.js';
 import { CasperUploadDropzoneHelpersMixin } from './mixins/casper-upload-dropzone-helpers-mixin.js';
 
 import '@vaadin/vaadin-upload/vaadin-upload.js';
-import '@cloudware-casper/casper-icons/casper-icon.js';
-import '@cloudware-casper/casper-button/casper-button.js';
-import '@cloudware-casper/casper-notice/casper-notice.js';
+import '@toconline/casper-icons/casper-icon.js';
+import '@toconline/casper-button/casper-button.js';
+import '@toconline/casper-notice/casper-notice.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 
